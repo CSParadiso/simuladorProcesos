@@ -1,0 +1,56 @@
+/* PALETA DE COLORES */
+/* #8ECAE6
+#219EBC
+#023047
+#FFB703
+#FB8500 */
+
+/* ELEMENTOS */
+
+body {
+  background-color: #FFB703 ;
+}
+
+th, td {
+  border: 1px solid #023047;
+  border-collapse: collapse;
+}
+
+table {
+  width: 100%;
+  text-align: center;
+}
+
+/* CLASES */
+
+/* PSEUDOCLASES */
+
+/* IDs */
+
+#ingresos {
+  color: #023047;
+  width: fit-content;
+  margin: auto;
+}
+
+#simulateOrReset {
+  display: flex;
+  justify-content: center;
+}
+
+#startSimulation, #resetForm, #botonDescargaResultados {
+  background-color: #023047;
+  color: #FFB703;
+  width: fit-content;
+}
+
+#salidas {
+  color: #023047;
+  width: 100%;
+  margin: auto;
+}
+
+#descargar {
+  display: flex;
+  justify-content: center;
+}
