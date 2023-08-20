@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  
+</head>
+<body>
+  <form id="uploadForm">
+    <input type="file" id="fileInput" />
+    <button type="submit">Upload</button>
+  </form>
+  
+  <button id="downloadButton">Descargar</button>
+  
+  <script>
+document.getElementById("uploadForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const fileInput = document.getElementById("fileInput");
+  const selectedFile = fileInput.files[0];
+
+  if (selectedFile) {
+    // Handle the selected file
+    handleUploadedFile(selectedFile);
+  }
+});
+
+
+    function handleUploadedFile(file) {
+  const reader = new FileReader();
+
+  reader.onload = function (event) {
+    const fileContent = event.target.result;
+
+    // Process the file content
+    console.log("File content:", fileContent);
+  };
+
+  reader.readAsText(file); // Read the file as text
+}
+
+
+
+    function downloadTextFile() {
+    // Text content to be saved in the file
+    const textContent = "This is the content of the text file.";
+  
+    // Create a Blob containing the text data
+    const blob = new Blob([textContent], { type: "text/plain" });
+  
+    // Create a URL for the Blob
+    const url = URL.createObjectURL(blob);
+  
+    // Create a link element for downloading
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "example.txt"; // File name
+  
+    // Append the link to the DOM
+    document.body.appendChild(link);
+  
+    // Programmatically trigger a click event on the link
+    link.click();
+  
+    // Clean up by revoking the Blob URL
+    URL.revokeObjectURL(url);
+  }
+  
+  // Call the function when a button is clicked or any other event occurs
+  document.getElementById("downloadButton").addEventListener("click", downloadTextFile);
+  </script>
+</body>
+</html>
