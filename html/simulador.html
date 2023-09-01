@@ -19,11 +19,12 @@
       <section id="ingresos">
       <!-- Formulario de los distintos inputs requeridos para simular -->
       <form id="manejadorArchivos">
-        <fieldset id="selectFiles">
+        <fieldset id="selectFile">
           <!-- Seleccionar archivo .txt -->
           <legend>Seleccionar archivo</legend>
           <input type="file" id="inputFile" accept=".txt" required />
-          <button type="submit" id="uploadFile">Subir Archivo</button>
+          <button type="submit" id="processFile">Procesar Archivo</button>
+          <div id="datosTandaIngresada" style="display: none;"></div>
         </fieldset>
         <fieldset id="selectPolitics">
           <!-- Seleccionara política -->
