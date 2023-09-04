@@ -1,5 +1,5 @@
-Proceso1,0,5,4,20,3
-Proceso2,2,12,4,12,2
-Proceso3,5,3,4,3,1
-Proceso4,7,8,4,6,2
-Proceso5,7,7,4,4,1
+Calcular saldo,0,5,4,20,3
+Jugar al truco,2,12,4,12,2
+Ver La Naranja Mecánica,5,3,4,3,1
+Compilar programa,7,8,4,6,2
+Depurar,7,7,4,4,1
