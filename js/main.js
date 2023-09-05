@@ -8,6 +8,15 @@ document.getElementById("processFile").addEventListener("click", function (e) {
   }
 })
 
+// Simular Dispatcher
+document.getElementById("startSimulation").addEventListener("click", function (e) {
+  e.preventDefault(); // Evitar que la página se actualice luego del submit
+  // Obtener parámetros SO ingresados por el usuario
+  const tiemposSO = obtenerParametrosSo();
+  // console.log(tiemposSO);
+
+})
+
 // Procesar archivo
 function procesarArchivo(archivo) {
   const lector = new FileReader(); // Permite manipular archivos asincrónicamente
@@ -56,7 +65,7 @@ function crearTabla() {
   const encabezadoRafagasCpu = document.createElement("th");
   encabezadoRafagasCpu.innerHTML = "Ráfagas de CPU para completarse";
   const encabezadoDuracionRafagasCPU = document.createElement("th");
-  encabezadoDuracionRafagasCPU.innerHTML = "Duración ráfagas CPU (Quantum)";
+  encabezadoDuracionRafagasCPU.innerHTML = "Duración ráfagas CPU";
   const encabezadoDuracionRafagasIO = document.createElement("th");
   encabezadoDuracionRafagasIO.innerHTML = "Duración ráfagas I/O";
   const encabezadoPrioridad = document.createElement("th");
@@ -108,3 +117,54 @@ function agregarItemsTabla(tabla, tandaProcesos) {
     filaTablaDatos.appendChild(datoPrioridad);
   };
 }
+
+// TODO #2
+// Recuperación de datos desde la página
+// para usar en los algoritmos (options e input numbers)
+
+function obtenerParametrosSo() {
+  // Tiempo que utiliza el SO para aceptar nuevos procesos
+  let valorTip = document.getElementById("tip").value; // Recuperar valor
+  valorTip = valorTip == "" ? 1 : parseInt(valorTip, 10); // Por defecto 1
+  // Tiempo que utiliza el SO para terminar procesos
+  let valorTfp = document.getElementById("tfp").value; // Recuperar valor
+  valorTfp = valorTfp == "" ? 1 : parseInt(valorTfp, 10); // Por defecto 1
+  // Tiempo de conmutación entre procesos
+  let valorTcp = document.getElementById("tcp").value; // Recuperar valor
+  valorTcp = valorTcp == "" ? 1 : parseInt(valorTcp, 10); // Por defecto 1
+  // Quantum
+  let valorQuantum = document.getElementById("quantum").value; // Recuperar valor
+  valorQuantum = valorQuantum == "" ? 1 : parseInt(valorQuantum, 10); // Por defecto 1
+  return { "tip" : valorTip, 
+           "tfp" : valorTfp, 
+           "tcp" : valorTcp, 
+           "quantum" : valorQuantum }
+}
+
+// TODO #3 
+// Diseñar algorimos de las políticas
+
+  // TODO #3.1 Diseñar FCFS (First Come First Served)
+  // 
+
+  // TODO #3.2 Prioridad Externa
+  //
+
+  // TODO #3.3 Round-Robin
+  //
+
+  // TODO #3.4 SPN (Shortest Process Next)
+  //
+
+  // TODO #3.5 SRTN (Shortest Remaining Time Next)
+  //
+
+// TODO #4 Mostrar en la página los resultados
+
+// TODO #5 Producir archivo de TRAZA y descargar
+
+// FIXME #1 Analizar si conviene usar solo JSON o arreglo de JSON
+
+// FIXME #2 Refactorizar lo que se repite
+
+// FIXME #3 Analizar si se puede usar más de un archivo

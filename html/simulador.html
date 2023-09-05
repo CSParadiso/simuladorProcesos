@@ -40,17 +40,17 @@
         <fieldset id="setTimes">
           <!-- Seleccionar tiempos del SO -->
           <legend>Seleccionar los tiempos del SO (en milisegundos)</legend>
-          <input type="number" min="0" placeholder="0" name="tip"/>
+          <input type="number" min="1" placeholder="1" name="tip" id="tip"/>
           <label for="tip">TIP</label>
           <span>Tiempo que utiliza el SO para aceptar nuevos procesos</span><br>
-          <input type="number" min="0" placeholder="0" name="tip"/>
-          <label for="tip">TFP</label>
+          <input type="number" min="1" placeholder="1" name="tfp" id="tfp"/>
+          <label for="tfp">TFP</label>
           <span>Tiempo que utiliza el SO para terminar procesos</span><br>
-          <input type="number" min="0" placeholder="0" name="tip"/>
-          <label for="tip">TCP</label>
+          <input type="number" min="1" placeholder="1" name="tcp" id="tcp"/>
+          <label for="tcp">TCP</label>
           <span>Tiempo de conmutación entre procesos</span><br>
-          <input type="number" min="0" placeholder="0" name="tip"/>
-          <label for="tip">Quantum</label>
+          <input type="number" min="1" placeholder="1" name="quantum" id="quantum"/>
+          <label for="quantum">Quantum</label>
           <span>(si fuera necesario)</span><br>
         </fieldset>
         <!-- Simular planificación de procesos (manejado por JavaScript) -->
