@@ -1,3 +1,5 @@
+let tandaProcesos; // Variable Global
+
 // Acceder al archivo subido por el usuario
 document.getElementById("processFile").addEventListener("click", function (e) {
   e.preventDefault(); // Evitar que la página se actualice luego del submit
@@ -12,9 +14,9 @@ document.getElementById("processFile").addEventListener("click", function (e) {
 document.getElementById("startSimulation").addEventListener("click", function (e) {
   e.preventDefault(); // Evitar que la página se actualice luego del submit
   // Obtener parámetros SO ingresados por el usuario
-  const tiemposSO = obtenerParametrosSo();
+  const tiemposSO = obtenerDatosSO();
   // console.log(tiemposSO);
-
+  simularTanda(tiemposSO, tandaProcesos);
 })
 
 // Procesar archivo
@@ -23,7 +25,7 @@ function procesarArchivo(archivo) {
   lector.readAsText(archivo); // Leer el archivo como texto
   lector.onload = function (event) { // Una vez que el archivo carga completamente, 
     const contenidoArchivo = event.target.result; // Obtener contenido tipo String
-    const tandaProcesos = toJsonArray(contenidoArchivo); // Convertir contenido a JsonArray
+    tandaProcesos = toJsonArray(contenidoArchivo); // Convertir contenido a JsonArray
     if (tandaProcesos.length != 0) { // Si la tanda no está vacía, mostramos su contenido
       const tabla = crearTabla(); 
       agregarItemsTabla(tabla, tandaProcesos);
@@ -31,6 +33,7 @@ function procesarArchivo(archivo) {
   };
 }
 
+// Convertir archivo a JsonArray
 function toJsonArray(fileContent) {
   // Obtener cada uno de los procesos del archivo (lineas del String)
   var procesos = fileContent.split("\n"); // Dividir String (btener procesos)
@@ -38,18 +41,19 @@ function toJsonArray(fileContent) {
   for (var proceso of procesos) { // Por cada uno de los procesos (items del arreglo) 
     var campos = proceso.split(","); // Dividir String (obtener campos)
     const objetoProceso = { // Agregar sus campos al objeto
-      "name":campos[0],
-      "arriveTime":campos[1],
-      "nroRafagas":campos[2],
-      "rCpuTime":campos[3],
-      "rIoTime":campos[4],
-      "priority":campos[5]
+      "name" :campos[0],
+      "arriveTime" : parseInt(campos[1], 10),
+      "nroRafagas" : parseInt(campos[2], 10),
+      "rCpuTime" : parseInt(campos[3], 10),
+      "rIoTime" : parseInt(campos[4], 10),
+      "priority" : parseInt(campos[5], 10)
     };
     tandaProcesos[procesos.indexOf(proceso)] = objetoProceso; // Agregar Objeto Proceso a Tanda
   }
   return tandaProcesos;
 }
 
+// Crear Tabla de Procesos
 function crearTabla() {
   // Crear tabla, caption, separador y fila de encabezados
   const tablaProcesos = document.createElement("table");
@@ -71,8 +75,8 @@ function crearTabla() {
   const encabezadoPrioridad = document.createElement("th");
   encabezadoPrioridad.innerHTML = "Prioridad";
   // Añadir elementos a sus respectivos contenedores en la página
-  document.getElementById("selectFile").insertBefore(separador, 
-    document.getElementById("datosTandaIngresada"));
+  // document.getElementById("selectFile").insertBefore(separador, 
+  //   document.getElementById("datosTandaIngresada"));
   tablaProcesos.appendChild(captionTabla);
   tablaProcesos.appendChild(filaTabla);
   filaTabla.appendChild(encabezadoNombre);
@@ -85,10 +89,12 @@ function crearTabla() {
   const contenedorTabla = document.getElementById("datosTandaIngresada");
   contenedorTabla.innerHTML = ""; // Borrar contenido antiguo
   contenedorTabla.style.display = "block"; // Hacer visible
+  contenedorTabla.appendChild(separador);
   contenedorTabla.appendChild(tablaProcesos); // Añadir tabla generada
   return tablaProcesos;
 }
 
+// Mostrar Procesos
 function agregarItemsTabla(tabla, tandaProcesos) {
   for (var procesito of tandaProcesos) { // Por cada proceso
     // Crear fila
@@ -118,11 +124,11 @@ function agregarItemsTabla(tabla, tandaProcesos) {
   };
 }
 
-// TODO #2
-// Recuperación de datos desde la página
-// para usar en los algoritmos (options e input numbers)
-
-function obtenerParametrosSo() {
+// Obtener Datos del Usuario
+function obtenerDatosSO() {
+  // Seleccionar política
+  let politica = document.getElementById("politics").value; // Recuperar valor
+  console.log(politica);
   // Tiempo que utiliza el SO para aceptar nuevos procesos
   let valorTip = document.getElementById("tip").value; // Recuperar valor
   valorTip = valorTip == "" ? 1 : parseInt(valorTip, 10); // Por defecto 1
@@ -135,14 +141,20 @@ function obtenerParametrosSo() {
   // Quantum
   let valorQuantum = document.getElementById("quantum").value; // Recuperar valor
   valorQuantum = valorQuantum == "" ? 1 : parseInt(valorQuantum, 10); // Por defecto 1
-  return { "tip" : valorTip, 
+  return { "politica" : politica,
+           "tip" : valorTip, 
            "tfp" : valorTfp, 
            "tcp" : valorTcp, 
            "quantum" : valorQuantum }
 }
+// TODO #2 Implementar Simulación
+function simularTanda(so, tanda) {
+  console.log(so);
+  console.log(tanda);
+}
 
 // TODO #3 
-// Diseñar algorimos de las políticas
+// Diseñar algoritmos de las políticas
 
   // TODO #3.1 Diseñar FCFS (First Come First Served)
   // 

@@ -1,0 +1,5 @@
+Proceso1,0,5,4,20,3
+Proceso2,2,12,7,12,2
+Proceso3,5,3,6,3,1
+Proceso4,7,8,4,6,2
+Proceso5,7,7,9,4,1

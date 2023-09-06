@@ -1,0 +1,5 @@
+Guardar Archivo,0,5,4,20,3
+Procesar Imagen,2,12,7,12,2
+Generar Control,5,3,6,3,1
+Administrar Task,7,8,4,6,2
+Monitorear,7,7,9,4,1
