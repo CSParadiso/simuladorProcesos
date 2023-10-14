@@ -164,43 +164,45 @@ document.getElementById("startSimulation").addEventListener("click", function (e
 
 // TODO #2 Implementar Simulación
 function simularProcesamiento(tablaSo) {
-  // console.log("Datos del SO especificados por el usuario: ", so);
-  // console.log("Datos de la tanda cargada en el archivo: ", tandaProcesos);
-  
   // Procesar Tanda
   do {
-    console.log("En el tiempo", tablaSo.tiempo);
+    // Avanzar al siguiente tiempo t
+    tablaSo.siguienteTiempo(); // Más que nada sumar 1 a cada tiempo de los procesos en las colas
+
+    console.log("--------------------Iniciando el tiempo", tablaSo.tiempo, "--------------------");
+    //tablaSo.mostrarInformacion();
     
-    // LABORES DEL PLANIFICADOR DE LARGO PLAZO en cada momento t
+    // PLANIFICADOR DE LARGO PLAZO 
+    // en cada momento t
     tablaSo.verificarArrivos(tandaProcesos); // Corroborar si ha llegado un trabajo 
-    // Corroborar si los procesos Nuevos han finalizado su tip (tiempo de inicio de proceso)
-    if (tablaSo.colaNuevos.length != 0) { tablaSo.verificarTip(); }
-    // Corroborar si los procesos Finalizados han finalizado su tfp(tiempo de finalización de proceso)
-    if (tablaSo.colaFinalizados.length != 0) { tablaSo.finalizarProcesos(); }
+
+    // PLANIFICADOR DE CORTO PLAZO 
+    // Verificar Interrupciones (Bloqueado a Listo)
+    if (tablaSo.colaBloqueados.length != 0) { // verificar si ha completado E/S
+      tablaSo.verificarInterrupciones();
+    }
+
+    // PLANIFICADOR DE LARGO PLAZO 
+    // Corroborar si los procesos Nuevos han completado su tip (Nuevo a Listo)
+    if (tablaSo.colaNuevos.length  != 0) { tablaSo.verificarTip(); }
+    
+    // PLANIFICADOR DE LARGO PLAZO
+    // Corroborar si los procesos finalizando han completado su tfp(tiempo de finalización de proceso)
+    if (tablaSo.colaFinalizando.length != 0) { tablaSo.finalizarProcesos(); }
 
     // LABORES DEL PLANIFICADOR DE CORTO PLAZO en cada momento t
-    if (tablaSo.colaListos.length != 0) { 
+    // (Corriendo a [Terminado, Bloqueado, Listo])
+    if (tablaSo.colaListos.length != 0 ||
+      tablaSo.procesador.procesoEnEjecucion != null) { // Verificar cual es el siguiente
       tablaSo.procesador.procesoEnEjecucion = tablaSo.politica.seleccionarSiguiente(tablaSo); 
-    } // Verificar cual es el siguiente
-    // Avanzar al siguiente tiempo t
-    tablaSo.ejecutar(); // Más que nada sumar 1 a cada tiempo de los procesos en las colas
-  
-    // Seguimiento
-    //console.log(tablaSo);
-    // console.log("Tiempo:", tablaSo.tiempo);
-    // console.log("Nuevos:", tablaSo.colaNuevos);
-    // console.log("Listos:", tablaSo.colaListos);
-    // console.log("Bloqueados:", tablaSo.colaBloqueados);
-    // console.log("Finalizados:", tablaSo.colaFinalizados);
-    // console.log("Cantidad Finalizados:", tablaSo.procesosFinalizados);
-
-    console.log("-------------------------------------------------------------------------------------")
-
-  // } while (tablaSo.procesosFinalizados != tandaProcesos.length) // Mientras haya procesos sin finalizar 
-  } while (tablaSo.tiempo != 50) // Mientras haya procesos sin finalizar 
-  
-  
-  
+    }    
+    //tablaSo.mostrarInformacion();
+   
+   
+  } while (tablaSo.colaFinalizados.length != tandaProcesos.length) // Mientras haya procesos sin finalizar 
+  //} while (tablaSo.tiempo != 600) // Mientras haya procesos sin finalizar 
+  tablaSo.mostrarInformacion();
+  console.log(tablaSo.colaFinalizados);
 }
 
   //Procesos
@@ -222,6 +224,7 @@ function simularProcesamiento(tablaSo) {
       this.tablaSo = tablaSo; // Conoce la tabla del SO
       this.procesoEnEjecucion = null;
       this.primerTCP = 0;
+      this.servicio = true;
     }
   }  
 
@@ -234,12 +237,12 @@ function simularProcesamiento(tablaSo) {
       this.tfp = valorTfp; 
       this.tcp = valorTcp;
       this.q = valorQuantum;
-      this.tiempo = 0;
+      this.tiempo = -1;
       this.colaNuevos = [];
       this.colaListos = [];
       this.colaBloqueados = [];
+      this.colaFinalizando = [];
       this.colaFinalizados = [];
-      this.procesosFinalizados = 0;
     }
 
     // Verificar Arrivos
@@ -252,13 +255,34 @@ function simularProcesamiento(tablaSo) {
     }
   
     // Verificar Tips
-    verificarTip() {
-      for (var imagenProceso of this.colaNuevos) { // Por cada proceso Nuevo
-        if (imagenProceso.tip === this.tip) { // Si ha finalizado su tip
-          this.ponerAListo(imagenProceso);  // Poner a Listo
-          this.colaNuevos.splice(this.colaNuevos.indexOf(imagenProceso), 1); // Sacar de Nuevos
-        } 
-      }
+    verificarTip() { 
+      this.colaNuevos = this.colaNuevos.filter(imagenProceso => { // La cola de nuevos se reconstruye
+        if (imagenProceso.tip === this.tip) { // Si el proceso alcanzó su tip
+          this.ponerAListo(imagenProceso); // Poner a Listo
+          return false; // No incluir en el nuevo arreglo
+        }
+        return true; // Incluir en el nuevo arreglo
+      });
+    }
+
+    // Verificar Interrupciones
+    verificarInterrupciones() {
+      this.colaBloqueados = this.colaBloqueados.filter(imagenProceso => {
+        if (imagenProceso.unidadesRafagaES === imagenProceso.proceso.duracionRafagasES) {
+          if (imagenProceso.rafagaActual >= imagenProceso.proceso.rafagasCPU) { // Si finalizó su última E/S
+            imagenProceso.estado = "Finalizando"; // Cambiar su estado a Finalizado
+            this.colaFinalizando.push(imagenProceso); // Agregar a Finalizando
+            return false;
+          } else { // Si aún no finalizó sus ráfagas
+            imagenProceso.estado = "Listo"; // Cambiar su estado a Listo
+            this.colaListos.push(imagenProceso); // Agregar a cola de Listos
+            return false;
+          }
+        }
+        imagenProceso.unidadesRafagaES += 1; 
+        imagenProceso.tBloqueado += 1; 
+        return true;  
+      });
     }
 
     // Crear la imagen del proceso en la Tabla del So
@@ -269,58 +293,60 @@ function simularProcesamiento(tablaSo) {
         "tcp" : 0,
         "tfp" : 0,
         "estado" : "Nuevo", // Establecer estado
-        "rafagaActual" : 0, // Número de ráfaga actual
-        "unidadesRafagaCPUActual" : 0, // Contador unidades ráfaga actual
+        "rafagaActual" : 1, // Número de ráfaga actual
+        "unidadesRestantesRafagaCPU" : proceso.duracionRafagasCPU, // Contador unidades ráfaga actual
+        "unidadesRafagaES" : 0,
         "tBloqueado" : 0, // Contador unidades E/S
         "tInicio" : this.tiempo, // Marca de tiempo de Inicio
         "tListo" : 0, // Contador de tiempo en cola de Listos
         "tFin" : 0 // Marca de tiempo de Fin
       };
       this.colaNuevos.push(imagenProceso);
-      console.log("Creada la imagen del proceso", imagenProceso.proceso.nombre, "en el tiempo", this.tiempo, 
-      "y agregado a la cola de Nuevos.");
+      console.log("Cambio de estado del proceso", imagenProceso.proceso.nombre, "en el tiempo", this.tiempo, 
+      ": agregado a la cola de NUEVOS (creándose)");
     }  
 
     ponerAListo(imgProceso) {
       imgProceso.tListo = 0; // Se inicializa su tiempo en Listo 
       imgProceso.estado = "Listo"; // Se actualiza su estado a Listo
       this.colaListos.push(imgProceso); // Se añade a la cola de Listos al final
-      console.log("Puesto a Listo el proceso", imgProceso.proceso.nombre, "en el tiempo", this.tiempo, 
-      "y agregado a la cola de Listos");
+      console.log("Cambio de estado del proceso", imgProceso.proceso.nombre, "en el tiempo", this.tiempo, 
+      ": agregado a la cola de LISTOS");
     }
 
     finalizarProcesos() {
-      for (var imagenProceso of this.procesosFinalizados) { // Por cada proceso Finalizad
-        if (imagenProceso.tfp = this.tfp) { // Si ha finalizado su tip
-          this.imagenProceso.tFin = this.tiempo; // Se registra el tiempo de finalización
-          this.colaFinalizados.splice(this.colaFinalizados.indexOf(imagenProceso), 1); // Se elimina 
-          this.procesosFinalizados += 1;
+      this.colaFinalizando = this.colaFinalizando.filter(imagenProceso => {
+        if (imagenProceso.tfp != this.tfp) {
+          imagenProceso.tfp += 1;
+          return true;
         }
-      }
+        imagenProceso.estado = "Finalizado";
+        this.colaFinalizados.push(imagenProceso);
+        console.log("Cambio de estado del proceso", imagenProceso.proceso.nombre, "en el tiempo", this.tiempo, 
+        ": agregado a la cola de FINALIZADOS");
+        imagenProceso.tFin = this.tiempo;
+        return false
+      });
     }
 
     // +1 en todos los tiempos y cambio de estado y de Cola de acuerdo a condiciones
-    ejecutar() {
+    siguienteTiempo() {
       this.tiempo += 1;
+      // Mostrar proceso en Ejecución
+      if (this.procesador.procesoEnEjecucion != null) {
+        console.log("Cargado en Procesador el proceso", this.procesador.procesoEnEjecucion.proceso.nombre, 
+        "Ráfaga actual", this.procesador.procesoEnEjecucion.rafagaActual, 
+        "Unidades restantes ráfaga", this.procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU);
+      }
       // Incrementamos el tip de cada proceso Nuevo
       for(var imagenProceso of this.colaNuevos) { 
         imagenProceso.tip += 1; 
         console.log("Incrementando tip de", imagenProceso.proceso.nombre, "a", imagenProceso.tip);
       }
+      // Incrementamos el tip de cada proceso Listo
       for (var imagenProceso of this.colaListos) { imagenProceso.tListo += 1; }
-      // Verificar si Bloqueados ya finalizaron su rafaga de E/S
-      for (var imagenProceso of this.colaBloqueados) {  // Por cada proceso Bloqueado
-        if (imagenProceso.tBloqueado == imagenProceso.proceso.duracionRafagasES && 
-          imagenProceso.rafagaActual > imagenProceso.proceso.rafagasCPU) { // Si finalizó su última E/S
-          imagenProceso.estado = "Finalizado"; // Cambiar su estado a Finalizado
-          this.colaBloqueados.splice(this.procesosBloqueados.indexOf(imagenProceso), 1); // Se elimina de Bloqueados
-          this.colaFinalizados.push(imagenProceso); // Se añade a Finalizados
-        } else { // Sinó, aumentamos su tiempo bloqueado
-          imagenProceso.tBloqueado += 1;  // Aumentamos su tiempo en uno
-        }
-      }      
+      
     }
-
 
     // TODO #4.1 Calcular Indicadores Proceso
     // TODO #4.1.1 Tiempo de Retorno 
@@ -342,7 +368,38 @@ function simularProcesamiento(tablaSo) {
       return imagenProceso.tListo;
     }
 
-    
+    // Mostrar nombre del Proceso
+    verNombre(imagenProceso) {
+      console.log(imagenProceso.proceso.nombre);
+    }
+
+    // Mostrar información TablaSo
+    mostrarInformacion() {
+      console.log("-------------------- Arrancando el tiempo", this.tiempo, "--------------------");
+      console.log("NUEVOS");
+      this.colaNuevos.forEach(imagenProceso => {
+        this.verNombre(imagenProceso);
+      });
+      console.log("LISTOS");
+      this.colaListos.forEach(imagenProceso => {
+        this.verNombre(imagenProceso);
+      });
+      console.log("EJECUTANDO")
+      if(this.procesador.procesoEnEjecucion != null) { this.verNombre(this.procesador.procesoEnEjecucion); }
+      console.log("BLOQUEADOS");
+      this.colaBloqueados.forEach(imagenProceso => {
+        this.verNombre(imagenProceso);
+      });
+      console.log("FINALIZANDO (ejecutando TFP)");
+      this.colaFinalizando.forEach(imagenProceso => {
+        this.verNombre(imagenProceso);
+      });
+      console.log("FINALIZADOS");
+      this.colaFinalizados.forEach(imagenProceso => {
+        this.verNombre(imagenProceso);
+      });
+    }
+        
   }
 
 // TODO #3 
@@ -354,36 +411,49 @@ function simularProcesamiento(tablaSo) {
     }
 
     seleccionarSiguiente(tablaSo) {
-      console.log("Seleccionando siguiente proceso en tiempo", tablaSo.tiempo);
-      if (tablaSo.procesador.procesoEnEjecucion === null) {
-        return null;
-      } else {
+      //console.log("Seleccionando siguiente proceso en tiempo", tablaSo.tiempo);
+      if (tablaSo.procesador.primerTCP < tablaSo.tcp ) { // Si es el primer proceso de la tanda
+        tablaSo.procesador.primerTCP += 1; // Se ejecuta el primer tcp
+        console.log("Ejecutando Inicio de Tanda", tablaSo.procesador.primerTCP);
+      } else if (tablaSo.procesador.primerTCP === tablaSo.tcp) { // Una vez consumido el primer tcp 
+        tablaSo.procesador.procesoEnEjecucion = tablaSo.colaListos.shift(); // Se asigna al procesador el primer proceso
+        tablaSo.procesador.primerTCP += 1; // Sacamos del rango el tcp para que no se ejecute más
+        //console.log("Cargado a procesador primer proceso:", tablaSo.procesador.procesoEnEjecucion.proceso.nombre);
+        //ver(tablaSo.procesador.procesoEnEjecucion);
+      } else { // Si está ejecutando el proceso
         // Si se terminó su ráfaga actual y está usando tcp
-        if (tablaSo.procesador.procesoEnEjecucion.unidadesRafagaCPUActual = tablaSo.duracionRafagasCPU && 
+        if (tablaSo.procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU < 0 && 
           tablaSo.procesador.procesoEnEjecucion.tcp < tablaSo.tcp) {
           tablaSo.procesador.procesoEnEjecucion.tcp += 1; // Incrementamos tcp  
-          return tablaSo.procesador.procesoEnEjecucion  
+          console.log("Abandonando el proceso", tablaSo.procesador.procesoEnEjecucion.proceso.nombre, 
+          "al consumir una unidad de tcp (Ejecutano en modo SO).");
         // Si aún no consumió sus unidades de ráfaga actual    
-        } else if (tablaSo.procesador.procesoEnEjecucion.unidadesRafagaCPUActual < tablaSo.duracionRafagasCPU) { 
-          tablaSo.procesador.procesoEnEjecucion.unidadesRafagaCPUActual += 1; // Incrementar uso de CPU
-          return tablaSo.procesador.procesoEnEjecucion  
+        } else if (tablaSo.procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU >= 0 ) { 
+          tablaSo.procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU -= 1; // Decrementar uso de CPU
+          console.log("Ejecutando ráfaga de CPU del proceso", tablaSo.procesador.procesoEnEjecucion.proceso.nombre);
+          //ver(tablaSo.procesador.procesoEnEjecucion);
         // Si ya terminó su rafaga actual y su tcp
         } else  {
           tablaSo.procesador.procesoEnEjecucion.rafagaActual += 1; // Incrementamos en uno la ráfaga
-          tablaSo.procesador.procesoEnEjecucion.unidadesRafagaCPUActual = 0; // Reseteamos unidades de rafaga actual
+          tablaSo.procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU = 
+            tablaSo.procesador.procesoEnEjecucion.proceso.duracionRafagasCPU; // Reseteamos unidades de rafaga actual
           tablaSo.procesador.procesoEnEjecucion.tcp = 0; // Reseteamos tcp
-          if (tablaSo.colaListos.isEmpty() != 0) { // Si hay procesos Listos
-            tablaSo.procesador.procesoEnEjecucion.estado = "Bloqueado"; // Se bloquea en su última E/S
-            tablaSo.colaBloqueados.push(tablaSo.procesador.procesoEnEjecucion); // Añadimos a la cola 
-            tablaSo.procesador.procesoEnEjecucion = tablaSo.colaListos[0]; // Cambiamos de proceso en ejecución
+          tablaSo.procesador.procesoEnEjecucion.estado = "Bloqueado"; // Se bloquea en su última E/S
+          console.log("Cambio de estado del proceso", tablaSo.procesador.procesoEnEjecucion.proceso.nombre,
+           "en el tiempo", this.tiempo, 
+          ": agregado a la cola de LISTOS");
+          tablaSo.colaBloqueados.push(tablaSo.procesador.procesoEnEjecucion); // Añadimos a la cola 
+          tablaSo.procesador.procesoEnEjecucion = null;
+          if (tablaSo.colaListos.length != 0) { // Si hay procesos Listos
+            tablaSo.procesador.procesoEnEjecucion = tablaSo.colaListos.shift(); // Cambiamos de proceso en ejecución
             tablaSo.procesador.procesoEnEjecucion.estado = "Ejecutando";
-            return tablaSo.procesador.procesoEnEjecucion
-          } else {
-            return null;
-          }
+            console.log("Comenzando ráfaga del proceso", tablaSo.procesador.procesoEnEjecucion.proceso.nombre, 
+            "Rafagas actual", tablaSo.procesador.procesoEnEjecucion.rafagaActual, 
+            "Unidades Ráfaga Actual", tablaSo.procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU);
+          } 
         }
       }
-      
+      return tablaSo.procesador.procesoEnEjecucion;
     }
 
     // seleccionarSiguiente(listos) {
@@ -460,6 +530,25 @@ function simularProcesamiento(tablaSo) {
 
   }
 
+
+
+  function ver(imagenProceso) {
+    console.log(imagenProceso.proceso);
+    console.log(imagenProceso.tip);
+    console.log(imagenProceso.tcp);
+    console.log(imagenProceso.tfp);
+    console.log(imagenProceso.estado);
+    console.log(imagenProceso.rafagaActual);
+    console.log(imagenProceso.unidadesRestantesRafagaCPU);
+    console.log(imagenProceso.tBloqueado);
+    console.log(imagenProceso.tInicio);
+    console.log(imagenProceso.tListo);
+    console.log(imagenProceso.tFin);
+  } 
+
+  
+
+  
 // TODO #4 Calcular resultados 
  
 
