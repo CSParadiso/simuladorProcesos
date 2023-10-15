@@ -23,6 +23,11 @@ table {
 
 /* CLASES */
 
+.descargar {
+  display: flex;
+  justify-content: center;
+}
+
 /* PSEUDOCLASES */
 
 /* IDs */

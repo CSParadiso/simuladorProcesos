@@ -41,6 +41,7 @@ document.getElementById("startSimulation").addEventListener("click", function (e
                          valoresObtenidos.valorQuantum); // Crear Tabla de SO de acuerdo a los valores
   simularProcesamiento(datosSo);
   mostrarResultados(datosSo);
+  Auditor.simulaciones += 1; // Incrementar cantidad de simulaciones
 })
 
 // Procesar archivo
@@ -184,13 +185,12 @@ function obtenerDatosSO() {
   return { politica, valorTip, valorTfp, valorTcp, valorQuantum };
 }
 
-// TODO #2 Implementar Simulación
+// Bucle de lógica Principal
 function simularProcesamiento(tablaSo) {
-
-  //console.log(`-------- ESTADOS de los procesos al comenzar el tiempo ${tablaSo.tiempo}--------`);
 
   do {
     console.log(`-------- EVENTOS SUCEDIDOS EN EL TIEMPO ${tablaSo.tiempo}--------`);
+    Auditor.log(`-------- EVENTOS SUCEDIDOS EN EL TIEMPO ${tablaSo.tiempo}--------`);
 
     tablaSo.verificarArrivos();
 
@@ -214,13 +214,14 @@ function simularProcesamiento(tablaSo) {
 
 }
 
+// Mostrar Resultados en pantalla y habilitar descarga de eventos
 function mostrarResultados(tablaSo) {
   const seccionResultados = document.createElement("section"); // crear sección Resultados
   seccionResultados.id = "salidas";
   const campoDatos = document.createElement("fieldset"); // crear campo de datos
 
   const tablaIndicadoresProceso = crearTablaIndicadoresProceso(tablaSo.colaFinalizados);
-  const tablaIndicadoresTanda = crearTablaIndicadoresTanda(tablaSo.colaFinalizados);
+  const tablaIndicadoresTanda = crearTablaIndicadoresTanda(tablaSo);
   const tablaIndicadoresCPU = crearTablaIndicadoresCPU(tablaSo);
   
   campoDatos.appendChild(tablaIndicadoresProceso); // agregar tablaProcesos campo de datos
@@ -236,13 +237,16 @@ function mostrarResultados(tablaSo) {
   botonDescarga.id = "botonDescargaResultados"; 
   botonDescarga.innerHTML = "Descargar";
   const contenedorBotonDescarga = document.createElement("div"); // crear contenedor botón
-  contenedorBotonDescarga.id = "descargar";
+  contenedorBotonDescarga.id = `descargar${Auditor.simulaciones}`; // Cada botón descargar asociado a una simualción
+  contenedorBotonDescarga.classList.add("descargar");
   contenedorBotonDescarga.appendChild(botonDescarga); // agregar botón a contenedor
   document.body.appendChild(seccionResultados); // agregar sección a cuerpo
   document.body.appendChild(contenedorBotonDescarga); // agregar botón a cuerpo
+  Auditor.aTextFile(); // Mostrar botón de descarga de los resultados
 
 }
 
+// Crear tabla HTML de indicadores Proceso
 function crearTablaIndicadoresProceso(procesosFinalizados) {
   const tablaProcesos = document.createElement("table"); // crear tabla
   const caption = document.createElement("caption"); // crear caption
@@ -283,7 +287,8 @@ function crearTablaIndicadoresProceso(procesosFinalizados) {
   return tablaProcesos;
   }
 
-function crearTablaIndicadoresTanda(procesosFinalizados) {
+// Crear tabla HTML de indicadores Tanda
+function crearTablaIndicadoresTanda(tablaSo) {
   const tablaTanda = document.createElement("table"); // crear tabla
   const caption = document.createElement("caption"); // crear caption
   caption.innerHTML = "Indicadores de Tanda";
@@ -300,16 +305,16 @@ function crearTablaIndicadoresTanda(procesosFinalizados) {
 
   const filaDatos = document.createElement("tr");
   const datoTRT = document.createElement("td");
-  datoTRT.innerHTML = UtilidadCalculos.calcularTiempoRetornoTanda(procesosFinalizados);
+  datoTRT.innerHTML = UtilidadCalculos.calcularTiempoRetornoTanda(tablaSo);
   const datoTMRT = document.createElement("td");
-  datoTMRT.innerHTML = UtilidadCalculos.calcularTiempoMedioRetornoTanda(procesosFinalizados);
+  datoTMRT.innerHTML = UtilidadCalculos.calcularTiempoMedioRetornoTanda(tablaSo.colaFinalizados);
   filaDatos.appendChild(datoTRT);
   filaDatos.appendChild(datoTMRT);
   tablaTanda.appendChild(filaDatos);
 
   return tablaTanda;
   }  
-
+// Crear tabla HTML de indicadores CPU
 function crearTablaIndicadoresCPU(tablaSo) {
   const tablaCPU = document.createElement("table"); // crear tabla
   const caption = document.createElement("caption"); // crear caption
@@ -334,22 +339,18 @@ function crearTablaIndicadoresCPU(tablaSo) {
   const filaTabla = document.createElement("tr"); // crear fila de tabla
   const inutil = document.createElement("td"); // crear columna inutil
   inutil.innerHTML = UtilidadCalculos.calcularTiempoCpuDesocupada(tablaSo.procesador);
-  console.log(UtilidadCalculos.calcularTiempoCpuDesocupada(tablaSo.procesador));
   filaTabla.appendChild(inutil); // agregar a la fila
   
   const servicio = document.createElement("td"); // crear columna servicio
   servicio.innerHTML = UtilidadCalculos.calcularTiempoServicio(tablaSo.procesador);
-  console.log(UtilidadCalculos.calcularTiempoServicio(tablaSo.procesador));
   filaTabla.appendChild(servicio); // agregar a la fila
   
   const utilAbsoluto = document.createElement("td"); // crear columna util absoluto
   utilAbsoluto.innerHTML = UtilidadCalculos.calcularTiempoUtilCPUAbsoluto(tablaSo.colaFinalizados);
-  console.log(UtilidadCalculos.calcularTiempoUtilCPUAbsoluto(tablaSo.colaFinalizados));
   filaTabla.appendChild(utilAbsoluto); // agregar a la fila
   
   const utilPorcentaje = document.createElement("td"); // crear columna util porventaje
-  utilPorcentaje.innerHTML = UtilidadCalculos.calcularTiempoUtilCPUPorcentual(tablaSo.colaFinalizados);
-  console.log(UtilidadCalculos.calcularTiempoUtilCPUPorcentual(tablaSo.colaFinalizados));
+  utilPorcentaje.innerHTML = UtilidadCalculos.calcularTiempoUtilCPUPorcentual(tablaSo);
   filaTabla.appendChild(utilPorcentaje); // agregar a la fila
 
   tablaCPU.appendChild(filaTabla); // agregar fila a la tabla
@@ -365,6 +366,8 @@ class TablaSo {
     this.q = valorQuantum;
     this.tiempo = 0;
     this.procesosArrivados = 0;
+    this.inicio = 0;
+    this.fin = 0;
     this.colaNuevos = [];
     this.colaListos = [];
     this.colaBloqueados = [];
@@ -397,7 +400,11 @@ class TablaSo {
             imagenProceso.tFin = this.tiempo;
             imagenProceso.estado = this.estados.FINALIZADO;
             this.colaFinalizados.push(imagenProceso);
+            if(this.colaFinalizados.length === tandaProcesos.length) { // Si finaliza el último proceso
+              this.fin = this.tiempo;
+            }
             console.log(`--> FINALIZANDO a FINALIZADO: "${imagenProceso.proceso.nombre}" en t${this.tiempo}`);
+            Auditor.log(`--> FINALIZANDO a FINALIZADO: "${imagenProceso.proceso.nombre}" en t${this.tiempo}`);
             return false;
           }
         }
@@ -427,8 +434,10 @@ class TablaSo {
             "tListo" : 0, // Contador de tiempo en cola de Listos
             "tFin" : 0 // Marca de tiempo de Fin
           }
+          if(this.procesosArrivados === 0) { this.inicio = this.tiempo; } // Establecemos inicio de tanda
           this.procesosArrivados += 1; // Incrementamos los procesos arrivados
           console.log(`--> a NUEVO: "${imagenProceso.proceso.nombre}" en t${this.tiempo}`);
+          Auditor.log(`--> a NUEVO: "${imagenProceso.proceso.nombre}" en t${this.tiempo}`);
           this.colaNuevos.push(imagenProceso);
         }
       }  
@@ -443,6 +452,7 @@ class TablaSo {
           imagenProceso.estado = this.estados.LISTO; // Cambiamos estado
           this.colaListos.push(imagenProceso); // Agregamos a cola de Listos
           console.log(`--> NUEVO a LISTO: "${imagenProceso.proceso.nombre}" en t${this.tiempo}`);
+          Auditor.log(`--> NUEVO a LISTO: "${imagenProceso.proceso.nombre}" en t${this.tiempo}`);
           return false; // Retiramos proceso de cola de Nuevos
         } else { // Si no ha finalizado su tip
           imagenProceso.tip -= 1; // Consumimos una unidad
@@ -536,13 +546,16 @@ class Procesador {
       this.inicioTanda -= 1; // Se consume una unidad de tiempo 
       this.tiempoServicio += 1; // Incrementamos tiempo de servicio
       console.log("PROCESADOR: Iniciando...");
+      Auditor.log("PROCESADOR: Iniciando...");
       if (this.inicioTanda === 0) { // Si es momento de recibir procesos
         console.log("PROCESADOR: Listo. En el siguiente tiempo puede ejecutar ráfaga de proceso.");
+        Auditor.log("PROCESADOR: Listo. En el siguiente tiempo puede ejecutar ráfaga de proceso.");
       } // Si terminó su inicio
     } else if (this.procesoEnEjecucion != null && // Si hay un proceso cargado
       this.tablaSo.politica.seCambiaProceso(this.procesoEnEjecucion)) { // y debe cambiarse
         if (this.procesoEnEjecucion.tcp > 0) { // Si está cambiando de proceso aún
           console.log(`PROCESADOR: Retirando "${this.procesoEnEjecucion.proceso.nombre}"`, );
+          Auditor.log(`PROCESADOR: Retirando "${this.procesoEnEjecucion.proceso.nombre}"`, );
           this.procesoEnEjecucion.tcp -= 1; // Consumimos una unidad de tiempo
           this.tiempoServicio += 1; // Incrementamos tiempo de servicio
         } 
@@ -553,10 +566,12 @@ class Procesador {
       !this.tablaSo.politica.seCambiaProceso(this.procesoEnEjecucion)) {// y no debe cambiarse   
         if (this.procesoEnEjecucion.unidadesRestantesRafagaCPU != 0) { // Aún tiene ráfagas por ejecutar
           console.log(`PROCESADOR: Ejecutando "${this.procesoEnEjecucion.proceso.nombre}"`);
+          Auditor.log(`PROCESADOR: Ejecutando "${this.procesoEnEjecucion.proceso.nombre}"`);
           this.procesoEnEjecucion.unidadesRestantesRafagaCPU -= 1; // Se consume una unidad de tiempo
         }
       } else { // Si no hay nada para ejecutar
         console.log("PROCESADOR: Ocioso");
+        Auditor.log("PROCESADOR: Ocioso");
         this.tiempoInutil += 1;
       }
     }
@@ -576,7 +591,6 @@ class Procesador {
 
 class FirstComeFirstServed {
   seCambiaProceso(imagenProceso) {
-   //console.log("¿Es momento de cambiar proceso", imagenProceso.proceso.nombre, "?");
    return imagenProceso.unidadesRestantesRafagaCPU <= 0; // ¿Ha finalizado su ráfaga?
   }
 
@@ -596,10 +610,12 @@ class FirstComeFirstServed {
             imagenProceso.unidadesRestantesRafagaCPU = imagenProceso.proceso.duracionRafagasCPU; // Reiniciar unidades
             tablaSo.colaListos.push(imagenProceso); // Agregamos a cola de Listos
             console.log(`--> BLOQUEADO POR E/S a LISTO: "${imagenProceso.proceso.nombre}" en t${tablaSo.tiempo}`);
+            Auditor.log(`--> BLOQUEADO POR E/S a LISTO: "${imagenProceso.proceso.nombre}" en t${tablaSo.tiempo}`);
           } else {
             imagenProceso.estado = tablaSo.estados.FINALIZANDO; // Cambiar estado
             tablaSo.colaFinalizando.push(imagenProceso); // Agregamos a cola de Listos
             console.log(`--> BLOQUEADO POR E/S a FINALIZANDO: "${imagenProceso.proceso.nombre}" al finalizar t${tablaSo.tiempo}`);
+            Auditor.log(`--> BLOQUEADO POR E/S a FINALIZANDO: "${imagenProceso.proceso.nombre}" al finalizar t${tablaSo.tiempo}`);
           }
           return false; // Lo sacamos de la cola de Bloqueados
         } 
@@ -613,11 +629,13 @@ class FirstComeFirstServed {
       tablaSo.procesador.procesoEnEjecucion = tablaSo.colaListos.shift(); // Seleccionamos el primer elemento
       tablaSo.procesador.procesoEnEjecucion.estado = tablaSo.estados.EJECUTANDO; // Cambiar estado
       console.log(`--> LISTO a EJECUTANDO: "${tablaSo.procesador.procesoEnEjecucion.proceso.nombre}" en t${tablaSo.tiempo}`);
+      Auditor.log(`--> LISTO a EJECUTANDO: "${tablaSo.procesador.procesoEnEjecucion.proceso.nombre}" en t${tablaSo.tiempo}`);
     }
   }
 
   liberarProcesador(imagenProceso, tablaSo) {
     console.log(`--> EJECUTANDO a BLOQUEADO: "${imagenProceso.proceso.nombre}" al finalizar t${tablaSo.tiempo}`);
+    Auditor.log(`--> EJECUTANDO a BLOQUEADO: "${imagenProceso.proceso.nombre}" al finalizar t${tablaSo.tiempo}`);
     tablaSo.procesador.procesoEnEjecucion.estado = tablaSo.estados.BLOQUEADO; // Cambiar estado
     tablaSo.procesador.procesoEnEjecucion.unidadesRestantesRafagaES = tablaSo.procesador.procesoEnEjecucion.proceso.duracionRafagasES; 
     tablaSo.colaBloqueados.push(tablaSo.procesador.procesoEnEjecucion); // Agregar a cola de Bloqueados
@@ -626,6 +644,14 @@ class FirstComeFirstServed {
 
 }
 
+// TODO implementar RR
+// TODO implementar SJN
+// TODO implementar SRT
+// TODO implementar Prioridad
+// TODO Implementar descarga de resultados
+
+
+// Clase para realizar los cálculos de los resultados
 class UtilidadCalculos {
     // Tiempo de Retorno de un proceso (TRp): es desde que arriba el proceso hasta 
     // que termina (después de su TFP, incluyendo éste).
@@ -644,10 +670,8 @@ class UtilidadCalculos {
     }
     // Tiempo de retorno de la tanda (TRt)= desde que arriba el primer proceso 
     // hasta que se realiza el último TFP (incluyendo el tiempo de éste).
-    static calcularTiempoRetornoTanda(procesosFinalizados) {
-      var ultimoFin = procesosFinalizados[procesosFinalizados.length - 1].tFin;
-      var primeroInicio = procesosFinalizados[0].tInicio;
-      return ultimoFin - primeroInicio;
+    static calcularTiempoRetornoTanda(tablaSo) {
+      return tablaSo.fin - tablaSo.inicio;
     }
     // Tiempo Medio de retorno de la tanda (TMRt)= la suma de los tiempos de 
     // retorno de los procesos, dividido la cantidad de procesos.
@@ -670,12 +694,40 @@ class UtilidadCalculos {
         suma + (imagenProceso.proceso.rafagasCPU * imagenProceso.proceso.duracionRafagasCPU), 0);
       return `${sumaTiemposCPUProcesos}`;
     }
-    static calcularTiempoUtilCPUPorcentual(procesosFinalizados) {
-      var sumaTiemposCPUProcesos = procesosFinalizados.reduce((suma, imagenProceso) =>
+    static calcularTiempoUtilCPUPorcentual(tablaSo) {
+      var sumaTiemposCPUProcesos = tablaSo.colaFinalizados.reduce((suma, imagenProceso) =>
         suma + (imagenProceso.proceso.rafagasCPU * imagenProceso.proceso.duracionRafagasCPU), 0);
-      return `${(sumaTiemposCPUProcesos / this.calcularTiempoRetornoTanda(procesosFinalizados)* 100).toFixed(2)}%`;
+      return `${(sumaTiemposCPUProcesos / this.calcularTiempoRetornoTanda(tablaSo)* 100).toFixed(2)}%`;
     }
 
+
+}
+
+// Clase auditora y que escribe en el archivo generado para cada simulación
+class Auditor {
+  static simulaciones = 0;
+  static mensajesLoggeados = []; // Arreglo de mensajes 
+
+  static log(mensaje) {
+    this.mensajesLoggeados.push(mensaje); // Agregar mensaje
+  }
+
+  static aTextFile() {
+    const contenidoTexto = this.mensajesLoggeados.join('\n'); // Separar con nueva línea los mensajes del arreglo
+    const blob = new Blob([contenidoTexto], { type: "text/plain" }); // crear archivo de texto con contenido
+
+    const enlaceDescarga = document.createElement("a"); // crear enlace html
+    enlaceDescarga.href = URL.createObjectURL(blob); // vincular enlace a url
+    enlaceDescarga.download = `Eventos_${new Date().getUTCDate()
+      + 1}-${new Date().getMonth() 
+      + 1}-${new Date().getFullYear()}-${new Date().getHours()}-${new Date().getMinutes()}-${new Date().getSeconds()}.txt`; // Nombre del archivo a descargar
+
+    // Disparar un evento de click cuando se clickea el botón de descarga 
+    document.getElementById(`descargar${this.simulaciones}`).addEventListener("click", function () {
+        enlaceDescarga.click();
+    });
+
+  }
 
 }
 
