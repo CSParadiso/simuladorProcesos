@@ -41,9 +41,6 @@ document.getElementById("startSimulation").addEventListener("click", function (e
                          valoresObtenidos.valorQuantum); // Crear Tabla de SO de acuerdo a los valores
   simularProcesamiento(datosSo);
   mostrarResultados(datosSo);
-
-  
-  
 })
 
 // Procesar archivo
@@ -217,6 +214,149 @@ function simularProcesamiento(tablaSo) {
 
 }
 
+function mostrarResultados(tablaSo) {
+  const seccionResultados = document.createElement("section"); // crear sección Resultados
+  seccionResultados.id = "salidas";
+  const campoDatos = document.createElement("fieldset"); // crear campo de datos
+
+  const tablaIndicadoresProceso = crearTablaIndicadoresProceso(tablaSo.colaFinalizados);
+  const tablaIndicadoresTanda = crearTablaIndicadoresTanda(tablaSo.colaFinalizados);
+  const tablaIndicadoresCPU = crearTablaIndicadoresCPU(tablaSo);
+  
+  campoDatos.appendChild(tablaIndicadoresProceso); // agregar tablaProcesos campo de datos
+  campoDatos.appendChild(document.createElement("br")); // agregar un salto de línea
+  campoDatos.appendChild(tablaIndicadoresTanda); // agregar tablaTanda campo de datos
+  campoDatos.appendChild(document.createElement("br")); // agregar un salto de línea
+  campoDatos.appendChild(tablaIndicadoresCPU); // agregar tablaTanda campo de datos
+  seccionResultados.appendChild(document.createElement("br")); // agregar un salto de línea
+  seccionResultados.appendChild(campoDatos); // agregar campo de datos a seccion
+  seccionResultados.appendChild(document.createElement("br")); // agregar un salto de línea
+  
+  const botonDescarga = document.createElement("button"); // crear botón descarga
+  botonDescarga.id = "botonDescargaResultados"; 
+  botonDescarga.innerHTML = "Descargar";
+  const contenedorBotonDescarga = document.createElement("div"); // crear contenedor botón
+  contenedorBotonDescarga.id = "descargar";
+  contenedorBotonDescarga.appendChild(botonDescarga); // agregar botón a contenedor
+  document.body.appendChild(seccionResultados); // agregar sección a cuerpo
+  document.body.appendChild(contenedorBotonDescarga); // agregar botón a cuerpo
+
+}
+
+function crearTablaIndicadoresProceso(procesosFinalizados) {
+  const tablaProcesos = document.createElement("table"); // crear tabla
+  const caption = document.createElement("caption"); // crear caption
+  caption.innerHTML = "Indicadores de Proceso";
+
+  const filaEncabezados = document.createElement("tr"); // crear fila de tabla
+  const encabezadoIdProceso = document.createElement("th"); // crear encabezado Id Proceso
+  encabezadoIdProceso.innerHTML = "Id Proceso";
+  const encabezadoTrProceso = document.createElement("th"); // crear encabezado Tiempo de Retorno de Proceso
+  encabezadoTrProceso.innerHTML = "Tiempo de Retorno";
+  const encabezadoTrnProceso = document.createElement("th"); // crear encabezado Tiempo de Retorno Normalizado
+  encabezadoTrnProceso.innerHTML = "Tiempo de Retorno Normalizado";
+  const encabezadoTListoProceso = document.createElement("th"); // crear encabezado Tiempo Listo de Proceso
+  encabezadoTListoProceso.innerHTML = "Tiempo en Estado de Listo";
+  filaEncabezados.appendChild(encabezadoIdProceso);
+  filaEncabezados.appendChild(encabezadoTrProceso);
+  filaEncabezados.appendChild(encabezadoTrnProceso);
+  filaEncabezados.appendChild(encabezadoTListoProceso);
+  tablaProcesos.appendChild(filaEncabezados);
+  tablaProcesos.appendChild(caption);
+
+  for (var imagenProceso of procesosFinalizados) { // por cada una de las imágenes del proceso
+    const filaTabla = document.createElement("tr"); // crear fila de tabla
+    const id = document.createElement("td"); // crear columna id
+    id.innerHTML = imagenProceso.proceso.nombre; // cargar nombre Proceso
+    filaTabla.appendChild(id); // agregar a la fila
+    const tr = document.createElement("td"); // crear columna Tiempo de Retorno
+    tr.innerHTML = UtilidadCalculos.calcularTRp(imagenProceso); // cargar nombre Proceso
+    filaTabla.appendChild(tr); // agregar a la fila
+    const trn = document.createElement("td"); // crear columna Tiempo de Retorno Normalizado
+    trn.innerHTML = UtilidadCalculos.calcularTRNp(imagenProceso); // cargar Tiempo de Retorno Normalizado
+    filaTabla.appendChild(trn); // agregar a la fila
+    const tel = document.createElement("td"); // crear columna Tiempo Estado Listo
+    tel.innerHTML = UtilidadCalculos.calcularTEL(imagenProceso); // cargar Tiempo Estado Listo
+    filaTabla.appendChild(tel); // agregar a la fila
+    tablaProcesos.appendChild(filaTabla); // agregar fila a la tabla
+  }
+  return tablaProcesos;
+  }
+
+function crearTablaIndicadoresTanda(procesosFinalizados) {
+  const tablaTanda = document.createElement("table"); // crear tabla
+  const caption = document.createElement("caption"); // crear caption
+  caption.innerHTML = "Indicadores de Tanda";
+
+  const filaEncabezados = document.createElement("tr"); // crear fila de tabla
+  const encabezadoTRTanda = document.createElement("th"); // crear encabezado Tiempo de Retorno Tanda
+  encabezadoTRTanda.innerHTML = "Tiempo de Retorno Tanda";
+  const encabezadoTMRTanda = document.createElement("th"); // crear encabezado Tiempo Medio de Retorno de Tanda
+  encabezadoTMRTanda.innerHTML = "Tiempo Medio de Retorno Tanda";
+  filaEncabezados.appendChild(encabezadoTRTanda);
+  filaEncabezados.appendChild(encabezadoTMRTanda);
+  tablaTanda.appendChild(filaEncabezados);
+  tablaTanda.appendChild(caption);
+
+  const filaDatos = document.createElement("tr");
+  const datoTRT = document.createElement("td");
+  datoTRT.innerHTML = UtilidadCalculos.calcularTiempoRetornoTanda(procesosFinalizados);
+  const datoTMRT = document.createElement("td");
+  datoTMRT.innerHTML = UtilidadCalculos.calcularTiempoMedioRetornoTanda(procesosFinalizados);
+  filaDatos.appendChild(datoTRT);
+  filaDatos.appendChild(datoTMRT);
+  tablaTanda.appendChild(filaDatos);
+
+  return tablaTanda;
+  }  
+
+function crearTablaIndicadoresCPU(tablaSo) {
+  const tablaCPU = document.createElement("table"); // crear tabla
+  const caption = document.createElement("caption"); // crear caption
+  caption.innerHTML = "Indicadores de CPU";
+
+  const filaEncabezados = document.createElement("tr"); // crear fila de tabla
+  const encabezadoCPUInutil = document.createElement("th"); // crear encabezado Tiempo CPU Inútil
+  encabezadoCPUInutil.innerHTML = "Tiempo CPU Inútil";
+  const encabezadoCPUServicio = document.createElement("th"); // crear encabezado Tiempo Servicio CPU
+  encabezadoCPUServicio.innerHTML = "Tiempo Servicio CPU";
+  const encabezadoCPUUtilAbsoluto = document.createElement("th"); // crear encabezado Tiempo CPU Útil Absoluto
+  encabezadoCPUUtilAbsoluto.innerHTML = "Tiempo CPU Útil (Absoluto)";
+  const encabezadoCPUUtilPorcentual = document.createElement("th"); // crear encabezado Tiempo CPU Útil Porcentaje
+  encabezadoCPUUtilPorcentual.innerHTML = "Tiempo CPU Útil (Porcentaje)";
+  filaEncabezados.appendChild(encabezadoCPUInutil);
+  filaEncabezados.appendChild(encabezadoCPUServicio);
+  filaEncabezados.appendChild(encabezadoCPUUtilAbsoluto);
+  filaEncabezados.appendChild(encabezadoCPUUtilPorcentual);
+  tablaCPU.appendChild(filaEncabezados);
+  tablaCPU.appendChild(caption);
+
+  const filaTabla = document.createElement("tr"); // crear fila de tabla
+  const inutil = document.createElement("td"); // crear columna inutil
+  inutil.innerHTML = UtilidadCalculos.calcularTiempoCpuDesocupada(tablaSo.procesador);
+  console.log(UtilidadCalculos.calcularTiempoCpuDesocupada(tablaSo.procesador));
+  filaTabla.appendChild(inutil); // agregar a la fila
+  
+  const servicio = document.createElement("td"); // crear columna servicio
+  servicio.innerHTML = UtilidadCalculos.calcularTiempoServicio(tablaSo.procesador);
+  console.log(UtilidadCalculos.calcularTiempoServicio(tablaSo.procesador));
+  filaTabla.appendChild(servicio); // agregar a la fila
+  
+  const utilAbsoluto = document.createElement("td"); // crear columna util absoluto
+  utilAbsoluto.innerHTML = UtilidadCalculos.calcularTiempoUtilCPUAbsoluto(tablaSo.colaFinalizados);
+  console.log(UtilidadCalculos.calcularTiempoUtilCPUAbsoluto(tablaSo.colaFinalizados));
+  filaTabla.appendChild(utilAbsoluto); // agregar a la fila
+  
+  const utilPorcentaje = document.createElement("td"); // crear columna util porventaje
+  utilPorcentaje.innerHTML = UtilidadCalculos.calcularTiempoUtilCPUPorcentual(tablaSo.colaFinalizados);
+  console.log(UtilidadCalculos.calcularTiempoUtilCPUPorcentual(tablaSo.colaFinalizados));
+  filaTabla.appendChild(utilPorcentaje); // agregar a la fila
+
+  tablaCPU.appendChild(filaTabla); // agregar fila a la tabla
+  
+  return tablaCPU;
+}  
+
 class TablaSo {
   constructor(valorPolitica, valorTip, valorTfp, valorTcp, valorQuantum) {
     this.tip = valorTip; 
@@ -386,12 +526,9 @@ class Procesador {
   constructor(tablaSo) {
     this.tablaSo = tablaSo; // Conoce la tabla del SO
     this.procesoEnEjecucion = null;
-    this.procesadorLibre = false; // El procesador arranca ocupado (debe iniciar)
     this.tiempoInutil = 0;
     this.inicioTanda = tablaSo.tcp; // El tiempo de inicio es igual al tcp del SO
-    this.servicio = true;
     this.tiempoServicio = 0;
-    var cambiarEnSiguienteTiempo = false; // Variable bandera
   }
 
   ejecutar() { 
@@ -400,7 +537,6 @@ class Procesador {
       this.tiempoServicio += 1; // Incrementamos tiempo de servicio
       console.log("PROCESADOR: Iniciando...");
       if (this.inicioTanda === 0) { // Si es momento de recibir procesos
-        //this.procesadorLibre = true;
         console.log("PROCESADOR: Listo. En el siguiente tiempo puede ejecutar ráfaga de proceso.");
       } // Si terminó su inicio
     } else if (this.procesoEnEjecucion != null && // Si hay un proceso cargado
@@ -408,6 +544,7 @@ class Procesador {
         if (this.procesoEnEjecucion.tcp > 0) { // Si está cambiando de proceso aún
           console.log(`PROCESADOR: Retirando "${this.procesoEnEjecucion.proceso.nombre}"`, );
           this.procesoEnEjecucion.tcp -= 1; // Consumimos una unidad de tiempo
+          this.tiempoServicio += 1; // Incrementamos tiempo de servicio
         } 
         if (this.procesoEnEjecucion.tcp === 0){
           this.tablaSo.liberarProcesador(this.procesoEnEjecucion); // Según política
@@ -489,27 +626,57 @@ class FirstComeFirstServed {
 
 }
 
-class Utilidad {
-  // TODO #4.1 Calcular Indicadores Proceso
-    
-    // TODO #4.1.1 Tiempo de Retorno 
+class UtilidadCalculos {
     // Tiempo de Retorno de un proceso (TRp): es desde que arriba el proceso hasta 
     // que termina (después de su TFP, incluyendo éste).
-    calcularTRp(imagenProceso) {
-      return imagenProceso.tFin - imagenProceso.tInicio;
+    static calcularTRp(imagenProceso) {
+      return (imagenProceso.tFin - imagenProceso.tInicio);
     }
-    // TODO #4.1.2 Tiempo de Retorno Normalizado
     //  Tiempo de retorno normalizado (TRn)= Es el tiempo de Retorno del proceso 
     // dividido el tiempo efectivo de CPU que utilizó.
-    calcularTRNp(imagenProceso) {
+    static calcularTRNp(imagenProceso) {
       var tiempoCPUtotal = imagenProceso.proceso.rafagasCPU * imagenProceso.proceso.duracionRafagasCPU;
-      return this.calcularTRp(imagenProceso) * tiempoCPUtotal;
+      return `${this.calcularTRp(imagenProceso)} / ${tiempoCPUtotal}`;
     }
-    // TODO #4.1.3 Tiempo en estado Listo
     // Suma de los tiempos en la cola de Listos
-    calcularTCL(imagenProceso) {
+    static calcularTEL(imagenProceso) {
       return imagenProceso.tListo;
     }
+    // Tiempo de retorno de la tanda (TRt)= desde que arriba el primer proceso 
+    // hasta que se realiza el último TFP (incluyendo el tiempo de éste).
+    static calcularTiempoRetornoTanda(procesosFinalizados) {
+      var ultimoFin = procesosFinalizados[procesosFinalizados.length - 1].tFin;
+      var primeroInicio = procesosFinalizados[0].tInicio;
+      return ultimoFin - primeroInicio;
+    }
+    // Tiempo Medio de retorno de la tanda (TMRt)= la suma de los tiempos de 
+    // retorno de los procesos, dividido la cantidad de procesos.
+    static calcularTiempoMedioRetornoTanda(procesosFinalizados) {
+      var sumaTiemposRetorno = procesosFinalizados.reduce((suma, imagenProceso) => 
+        suma + this.calcularTRp(imagenProceso), 0);
+      return sumaTiemposRetorno / procesosFinalizados.length;
+    }
+    // Tiempos de CPU desocupada
+    static calcularTiempoCpuDesocupada(procesador) {
+      return procesador.tiempoInutil;
+    }
+    // Tiempo de CPU utilizada por el SO
+    static calcularTiempoServicio(procesador) {
+      return procesador.tiempoServicio;
+    }
+    // Tiempos de CPU utilizada por los procesos (en tiempos absolutos y porcentuales)
+    static calcularTiempoUtilCPUAbsoluto(procesosFinalizados) {
+      var sumaTiemposCPUProcesos = procesosFinalizados.reduce((suma, imagenProceso) =>
+        suma + (imagenProceso.proceso.rafagasCPU * imagenProceso.proceso.duracionRafagasCPU), 0);
+      return `${sumaTiemposCPUProcesos}`;
+    }
+    static calcularTiempoUtilCPUPorcentual(procesosFinalizados) {
+      var sumaTiemposCPUProcesos = procesosFinalizados.reduce((suma, imagenProceso) =>
+        suma + (imagenProceso.proceso.rafagasCPU * imagenProceso.proceso.duracionRafagasCPU), 0);
+      return `${(sumaTiemposCPUProcesos / this.calcularTiempoRetornoTanda(procesosFinalizados)* 100).toFixed(2)}%`;
+    }
+
+
 }
 
 

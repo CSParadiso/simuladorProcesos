@@ -27,7 +27,7 @@ table {
 
 /* IDs */
 
-#ingresos {
+#ingresos, #salidas {
   color: #023047;
   width: 80%;
   margin: auto;
@@ -42,12 +42,6 @@ table {
   background-color: #023047;
   color: #FFB703;
   width: fit-content;
-}
-
-#salidas {
-  color: #023047;
-  width: 100%;
-  margin: auto;
 }
 
 #descargar {
