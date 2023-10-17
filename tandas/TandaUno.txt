@@ -1,5 +1,5 @@
-Calcular saldo,0,3,1,7,3
-Jugar al truco,2,2,2,4,2
-Ver La Naranja Mecánica,4,3,3,3,1
-Compilar programa,4,3,4,5,2
-Depurar,7,2,5,4,1
+Calcular saldo,0,3,7,5,1
+Jugar al truco,2,2,3,4,3
+Ver La Naranja Mecánica,4,3,5,3,2
+Compilar programa,4,3,3,5,5
+Depurar,7,2,2,4,4
