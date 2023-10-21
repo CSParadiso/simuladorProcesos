@@ -1,26 +1,26 @@
 let tandaProcesos = []; // Variable Global
 
-let nombreEstadoYTiempo = function (imagenProceso) {
-  console.log(imagenProceso.proceso.nombre, imagenProceso.estado);
-}
+// let nombreEstadoYTiempo = function (imagenProceso) {
+//   console.log(imagenProceso.proceso.nombre, imagenProceso.estado);
+// }
 
-let imagen = function (imagenProceso) {
-  console.log(imagenProceso.proceso);
-  console.log("TIP:", imagenProceso.tip);
-  console.log("TCP:", imagenProceso.tcp);
-  console.log("TFP:", imagenProceso.tfp);
-  console.log("ESTADO:", imagenProceso.estado);
-  console.log("Ráfagas Restantes:", imagenProceso.rafagasRestantes);
-  console.log("Unidades Restantes Ráfaga CPU:", imagenProceso.unidadesRestantesRafagaCPU);
-  console.log("Tiempo Bloqueado:", imagenProceso.tBloqueado);
-  console.log("Tiempo de inicio:", imagenProceso.tInicio);
-  console.log("Tiempo Listo:", imagenProceso.tListo);
-  console.log("Tiempo de finalización:", imagenProceso.tFin);
-} 
+// let imagen = function (imagenProceso) {
+//   console.log(imagenProceso.proceso);
+//   console.log("TIP:", imagenProceso.tip);
+//   console.log("TCP:", imagenProceso.tcp);
+//   console.log("TFP:", imagenProceso.tfp);
+//   console.log("ESTADO:", imagenProceso.estado);
+//   console.log("Ráfagas Restantes:", imagenProceso.rafagasRestantes);
+//   console.log("Unidades Restantes Ráfaga CPU:", imagenProceso.unidadesRestantesRafagaCPU);
+//   console.log("Tiempo Bloqueado:", imagenProceso.tBloqueado);
+//   console.log("Tiempo de inicio:", imagenProceso.tInicio);
+//   console.log("Tiempo Listo:", imagenProceso.tListo);
+//   console.log("Tiempo de finalización:", imagenProceso.tFin);
+// } 
 
-let nombre = function(imagenProceso) {
-  console.log(imagenProceso.proceso.nombre);
-} 
+// let nombre = function(imagenProceso) {
+//   console.log(imagenProceso.proceso.nombre);
+// } 
 
 // Acceder al archivo subido por el usuario
 document.getElementById("processFile").addEventListener("click", function (e) {
@@ -219,8 +219,8 @@ function simularProcesamiento(tablaSo) {
     //console.log(`-------- ESTADOS de los procesos al comenzar el tiempo ${tablaSo.tiempo}--------`);
     //tablaSo.mostrarInformacion(nombreYestado);
 
-  //} while (tandaProcesos.length != tablaSo.colaFinalizados.length);
-  } while (tablaSo.tiempo != 150);
+  } while (tandaProcesos.length != tablaSo.colaFinalizados.length);
+  //} while (tablaSo.tiempo != 150);
 
 }
 
@@ -524,7 +524,9 @@ class TablaSo {
           return true; // Se mantiene en la cola de Nuevos
         }
       });
-      if(this.politica.constructor.name === "PrioridadExterna") {
+      if(this.politica.constructor.name === "PrioridadExterna" ||
+         this.politica.constructor.name === "ShortestJobNext" ||
+         this.politica.constructor.name === "ShortestRemainingTime") {
         this.politica.ordenarListos(this.colaListos); // Cada política ordena su cola de Listos
       }
     }
@@ -549,54 +551,54 @@ class TablaSo {
     return this.politica.seCambiaProceso(imagenProceso);
   }
 
-  mostrarInformacion(funcion) {
-    console.log("NUEVOS: ");
-    this.colaNuevos.forEach(imagenProceso => {
-      funcion(imagenProceso);
-    });
-    console.log("LISTOS");
-    this.colaListos.forEach(imagenProceso => {
-      funcion(imagenProceso);
-    });
-    console.log("EJECUTANDO")
-    if(this.procesador.procesoEnEjecucion != null) { funcion(this.procesador.procesoEnEjecucion); }
-    console.log("BLOQUEADOS");
-    this.colaBloqueados.forEach(imagenProceso => {
-      funcion(imagenProceso);
-    });
-    console.log("FINALIZANDO (ejecutando TFP)");
-    this.colaFinalizando.forEach(imagenProceso => {
-      funcion(imagenProceso);
-    });
-    console.log("FINALIZADOS");
-    this.colaFinalizados.forEach(imagenProceso => {
-      funcion(imagenProceso);
-    });
+  // mostrarInformacion(funcion) {
+  //   console.log("NUEVOS: ");
+  //   this.colaNuevos.forEach(imagenProceso => {
+  //     funcion(imagenProceso);
+  //   });
+  //   console.log("LISTOS");
+  //   this.colaListos.forEach(imagenProceso => {
+  //     funcion(imagenProceso);
+  //   });
+  //   console.log("EJECUTANDO")
+  //   if(this.procesador.procesoEnEjecucion != null) { funcion(this.procesador.procesoEnEjecucion); }
+  //   console.log("BLOQUEADOS");
+  //   this.colaBloqueados.forEach(imagenProceso => {
+  //     funcion(imagenProceso);
+  //   });
+  //   console.log("FINALIZANDO (ejecutando TFP)");
+  //   this.colaFinalizando.forEach(imagenProceso => {
+  //     funcion(imagenProceso);
+  //   });
+  //   console.log("FINALIZADOS");
+  //   this.colaFinalizados.forEach(imagenProceso => {
+  //     funcion(imagenProceso);
+  //   });
 
-    let nombreYestado = function (imagenProceso) {
-      console.log(imagenProceso.proceso.nombre, imagenProceso.estado);
-    }
+  //   let nombreYestado = function (imagenProceso) {
+  //     console.log(imagenProceso.proceso.nombre, imagenProceso.estado);
+  //   }
     
-    let imagen = function (imagenProceso) {
-      console.log(imagenProceso.proceso);
-      console.log("TIP:", imagenProceso.tip);
-      console.log("TCP:", imagenProceso.tcp);
-      console.log("TFP:", imagenProceso.tfp);
-      console.log("ESTADO:", imagenProceso.estado);
-      console.log("Ráfagas Restantes:", imagenProceso.rafagasRestantes);
-      console.log("Unidades Restantes Ráfaga CPU:", imagenProceso.unidadesRestantesRafagaCPU);
-      console.log("Tiempo Bloqueado:", imagenProceso.tBloqueado);
-      console.log("Tiempo de inicio:", imagenProceso.tInicio);
-      console.log("Tiempo Listo:", imagenProceso.tListo);
-      console.log("Tiempo de finalización:", imagenProceso.tFin);
-    } 
+  //   let imagen = function (imagenProceso) {
+  //     console.log(imagenProceso.proceso);
+  //     console.log("TIP:", imagenProceso.tip);
+  //     console.log("TCP:", imagenProceso.tcp);
+  //     console.log("TFP:", imagenProceso.tfp);
+  //     console.log("ESTADO:", imagenProceso.estado);
+  //     console.log("Ráfagas Restantes:", imagenProceso.rafagasRestantes);
+  //     console.log("Unidades Restantes Ráfaga CPU:", imagenProceso.unidadesRestantesRafagaCPU);
+  //     console.log("Tiempo Bloqueado:", imagenProceso.tBloqueado);
+  //     console.log("Tiempo de inicio:", imagenProceso.tInicio);
+  //     console.log("Tiempo Listo:", imagenProceso.tListo);
+  //     console.log("Tiempo de finalización:", imagenProceso.tFin);
+  //   } 
     
-    let nombre = function(imagenProceso) {
-      console.log(imagenProceso.proceso.nombre);
-    }  
+  //   let nombre = function(imagenProceso) {
+  //     console.log(imagenProceso.proceso.nombre);
+  //   }  
     
 
-  }
+  // }
 
 }
 
@@ -779,11 +781,15 @@ class RoundRobin {
 }
 
 class ShortestJobNext {
-  seCambiaProceso(procesador) { // Igual que FCFS
+  ordenarListos(colaListos) {
+    colaListos.sort((a, b) => (a.proceso.duracionRafagasCPU - b.proceso.duracionRafagasCPU));
+  }
+
+  seCambiaProceso(procesador) { 
    return procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU <= 0; // ¿Ha finalizado su ráfaga?
   }
 
-  verificarBloqueados(tablaSo) { // TODO ordenar listo de acuerdo a duracionRafagas quizás
+  verificarBloqueados(tablaSo) { 
     if(tablaSo.colaBloqueados.length != 0) { // Si hay procesos bloqueados
       tablaSo.colaBloqueados = tablaSo.colaBloqueados // se construye una nueva cola verificando
       .filter( imagenProceso => { // para cada proceso
@@ -798,6 +804,7 @@ class ShortestJobNext {
             imagenProceso.estado = tablaSo.estados.LISTO; // Cambiar estado
             imagenProceso.unidadesRestantesRafagaCPU = imagenProceso.proceso.duracionRafagasCPU; // Reiniciar unidades
             tablaSo.colaListos.push(imagenProceso); // Agregamos a cola de Listos
+            this.ordenarListos(tablaSo.colaListos); // Ordenar la cola de Listos
             console.log(`--> BLOQUEADO POR E/S a LISTO: "${imagenProceso.proceso.nombre}"`);// en t${tablaSo.tiempo}`);
             Auditor.log(`--> BLOQUEADO POR E/S a LISTO: "${imagenProceso.proceso.nombre}"`);// en t${tablaSo.tiempo}`);
           } else {
@@ -815,17 +822,15 @@ class ShortestJobNext {
   determinarSiguiente(tablaSo) { 
     // Como el procesador es quien demanda a la política que libere el procesador, corroboramos
     if (tablaSo.procesador.procesoEnEjecucion === null && tablaSo.colaListos.length != 0) { // Debería el procesador nulear el proceso al finalizar ráfaga
-      var siguienteProceso = tablaSo.colaListos.reduce((minimo, proceso) =>  // Elegir la ráfaga más corta
-        (proceso.duracionRafagasCPU < minimo ? proceso : minimo), tablaSo.colaListos[0]); // tomando como referencia el primer proceso de la cola de listos
-      tablaSo.procesador.procesoEnEjecucion = siguienteProceso; // Asignamos al procesador
+      this.ordenarListos(tablaSo.colaListos); // Ordenar la cola de Listos
+      tablaSo.procesador.procesoEnEjecucion = tablaSo.colaListos.shift(); // Asignamos al procesador el primer elemento
       tablaSo.procesador.procesoEnEjecucion.estado = tablaSo.estados.EJECUTANDO; // Cambiar estado
-      tablaSo.colaListos.splice(tablaSo.colaListos.indexOf(siguienteProceso), 1); // Sacamos de cola de Listos el proceso
       console.log(`--> LISTO a EJECUTANDO: "${tablaSo.procesador.procesoEnEjecucion.proceso.nombre}"`);// en t${tablaSo.tiempo}`);
       Auditor.log(`--> LISTO a EJECUTANDO: "${tablaSo.procesador.procesoEnEjecucion.proceso.nombre}"`);// en t${tablaSo.tiempo}`);
     }
   }
 
-  liberarProcesador(imagenProceso, tablaSo) { // IGUAL QUE FCFS
+  liberarProcesador(imagenProceso, tablaSo) { 
     console.log(`--> EJECUTANDO a BLOQUEADO: "${imagenProceso.proceso.nombre}" al finalizar t${tablaSo.tiempo}`);
     Auditor.log(`--> EJECUTANDO a BLOQUEADO: "${imagenProceso.proceso.nombre}" al finalizar t${tablaSo.tiempo}`);
     tablaSo.procesador.procesoEnEjecucion.estado = tablaSo.estados.BLOQUEADO; // Cambiar estado
@@ -837,16 +842,21 @@ class ShortestJobNext {
 }
 
 class ShortestRemainingTime { // Consultar con Luis porque las rafagas son todas iguales, no hay que calcular
+  ordenarListos(colaListos) {
+    colaListos.sort((a, b) => (a.unidadesRestantesRafagaCPU - b.unidadesRestantesRafagaCPU));
+  }
+  
   seCambiaProceso(procesador) { 
     var procesosRecienListos = procesador.tablaSo.colaListos.filter( proceso => // Determinar nuevos LISTOS
       proceso.tLlegadaListo ===  procesador.tablaSo.tiempo); // Si se suma en este tiempo
     if (procesosRecienListos.length != 0) { // Si hay recién llegados a Listos
       var rafagaMasCortaDeListos = procesosRecienListos.reduce((minimo, proceso) =>  // Elegir la ráfaga más corta
-      (proceso.duracionRafagasCPU < minimo ? proceso : minimo), procesosRecienListos[0]); // tomando como referencia el primer proceso de la cola de listos
-      return rafagaMasCortaDeListos.duracionRafagasCPU < procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU 
+      (proceso.unidadesRestantesRafagaCPU < minimo.unidadesRestantesRafagaCPU ? proceso : minimo), procesosRecienListos[0]); // tomando como referencia el primer proceso de la cola de listos
+      return rafagaMasCortaDeListos.unidadesRestantesRafagaCPU < procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU 
         || procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU === 0;
     } else {
-      return procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU === 0;  
+      return procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU === 0 ||
+        procesador.procesoEnEjecucion.tcp != procesador.tablaSo.tcp;  
     }
   }
 
@@ -865,6 +875,7 @@ class ShortestRemainingTime { // Consultar con Luis porque las rafagas son todas
             imagenProceso.estado = tablaSo.estados.LISTO; // Cambiar estado
             imagenProceso.unidadesRestantesRafagaCPU = imagenProceso.proceso.duracionRafagasCPU; // Reiniciar unidades
             tablaSo.colaListos.push(imagenProceso); // Agregamos a cola de Listos
+            this.ordenarListos(tablaSo.colaListos); // Ordenar cola de Listos
             console.log(`--> BLOQUEADO POR E/S a LISTO: "${imagenProceso.proceso.nombre}"`);// en t${tablaSo.tiempo}`);
             Auditor.log(`--> BLOQUEADO POR E/S a LISTO: "${imagenProceso.proceso.nombre}"`);// en t${tablaSo.tiempo}`);
           } else {
@@ -881,9 +892,10 @@ class ShortestRemainingTime { // Consultar con Luis porque las rafagas son todas
 
   determinarSiguiente(tablaSo) { // Igual que SJN
     // Como el procesador es quien demanda a la política que libere el procesador, corroboramos
+    this.ordenarListos(tablaSo.colaListos); // Ordenar cola de Listos
     if (tablaSo.procesador.procesoEnEjecucion === null && tablaSo.colaListos.length != 0) { // Debería el procesador nulear el proceso al finalizar ráfaga
       var siguienteProceso = tablaSo.colaListos.reduce((minimo, proceso) =>  // Elegir la ráfaga más corta
-        (proceso.duracionRafagasCPU < minimo ? proceso : minimo), tablaSo.colaListos[0]); // tomando como referencia el primer proceso de la cola de listos
+        (proceso.unidadesRestantesRafagaCPU < minimo.unidadesRestantesRafagaCPU ? proceso : minimo), tablaSo.colaListos[0]); // tomando como referencia el primer proceso de la cola de listos
       tablaSo.procesador.procesoEnEjecucion = siguienteProceso; // Asignamos al procesador
       tablaSo.procesador.procesoEnEjecucion.estado = tablaSo.estados.EJECUTANDO; // Cambiar estado
       tablaSo.colaListos.splice(tablaSo.colaListos.indexOf(siguienteProceso), 1); // Sacamos de cola de Listos el proceso
@@ -900,6 +912,7 @@ class ShortestRemainingTime { // Consultar con Luis porque las rafagas son todas
       imagenProceso.tcp = tablaSo.tcp; // Reiniciamos tcp de ráfaga
       tablaSo.colaListos.push(tablaSo.procesador.procesoEnEjecucion); // Agregar a cola de Listos
       tablaSo.procesador.procesoEnEjecucion = null;
+      this.ordenarListos(tablaSo.colaListos); // Ordenar cola de Listos
     } else { // Si ha terminado su ráfaga
       console.log(`--> EJECUTANDO a BLOQUEADO: "${imagenProceso.proceso.nombre}" al finalizar t${tablaSo.tiempo}`);
       Auditor.log(`--> EJECUTANDO a BLOQUEADO: "${imagenProceso.proceso.nombre}" al finalizar t${tablaSo.tiempo}`);
@@ -1030,7 +1043,6 @@ class PrioridadExterna {
 
 }
 
-
 // Clase para realizar los cálculos de los resultados
 class UtilidadCalculos {
     // Tiempo de Retorno de un proceso (TRp): es desde que arriba el proceso hasta 
@@ -1062,7 +1074,7 @@ class UtilidadCalculos {
     }
     // Tiempos de CPU desocupada
     static calcularTiempoCpuDesocupada(procesador) {
-      return procesador.tiempoInutil;
+      return procesador.tiempoInutil + 1; 
     }
     // Tiempo de CPU utilizada por el SO
     static calcularTiempoServicio(procesador) {
