@@ -25,10 +25,15 @@ let tandaProcesos = []; // Variable Global
 // Acceder al archivo subido por el usuario
 document.getElementById("processFile").addEventListener("click", function (e) {
   e.preventDefault(); // Evitar que la página se actualice luego del submit
-  if(document.getElementById("salidas")) { // Si hubo simulaciones, 
-    document.getElementById("salidas").remove(); // borrar las salidas
-    document.getElementById("botonDescargaResultados").remove(); // borra botón de descarga
-  }
+  let seccion = document.getElementById("ingresos");
+  if (seccion) { // Borrar todo lo que haya, si había algo, al procesar el nuevo archivo
+    let siguienteElemento = seccion.nextElementSibling;
+    while (siguienteElemento) {
+        const toRemove = siguienteElemento;
+        siguienteElemento = siguienteElemento.nextElementSibling;
+        toRemove.remove();
+    }
+}
   // Obtener el archivo subido (no aceptamos más de uno)
   const archivoSeleccionado = document.getElementById("inputFile").files[0];
   if (archivoSeleccionado) { // Si el archivo existe
@@ -192,6 +197,8 @@ function obtenerDatosSO() {
 // Bucle de lógica Principal
 function simularProcesamiento(tablaSo) {
 
+  AnimacionTiempoReal.iniciarGrafico();
+  
   do {
     console.log();
     console.log(`%c-------- EVENTOS SUCEDIDOS EN EL TIEMPO ${tablaSo.tiempo} --------`, 
@@ -213,39 +220,35 @@ function simularProcesamiento(tablaSo) {
     tablaSo.determinarSiguiente();
 
     tablaSo.ejecutar();
+
+    AnimacionTiempoReal.generarTGrafico(tablaSo);
     
     tablaSo.pasarAlSiguienteTiempo(); 
-    
-    //console.log(`-------- ESTADOS de los procesos al comenzar el tiempo ${tablaSo.tiempo}--------`);
-    //tablaSo.mostrarInformacion(nombreYestado);
 
   } while (tandaProcesos.length != tablaSo.colaFinalizados.length);
-  //} while (tablaSo.tiempo != 150);
 
 }
 
 // Mostrar Resultados en pantalla y habilitar descarga de eventos
 function mostrarResultados(tablaSo) {
   const seccionResultados = document.createElement("section"); // crear sección Resultados
-  seccionResultados.id = "salidas";
+  seccionResultados.id = "salidas"; // Asignar id
   const campoDatos = document.createElement("fieldset"); // crear campo de datos
 
+  // const tablaSeguimiento = AnimacionTiempoReal.iniciarGrafico();
   const tablaCabecera = crearCabeceraResultados(tablaSo);
   const tablaIndicadoresProceso = crearTablaIndicadoresProceso(tablaSo.colaFinalizados);
   const tablaIndicadoresTanda = crearTablaIndicadoresTanda(tablaSo);
   const tablaIndicadoresCPU = crearTablaIndicadoresCPU(tablaSo);
   
   campoDatos.appendChild(tablaCabecera); // agregar cabecera simulación
-  campoDatos.appendChild(document.createElement("br")); // agregar un salto de línea
+  campoDatos.appendChild(document.createElement("br")); // // agregar un salto de línea
   campoDatos.appendChild(tablaIndicadoresProceso); // agregar tablaProcesos campo de datos
   campoDatos.appendChild(document.createElement("br")); // agregar un salto de línea
   campoDatos.appendChild(tablaIndicadoresTanda); // agregar tablaTanda campo de datos
   campoDatos.appendChild(document.createElement("br")); // agregar un salto de línea
   campoDatos.appendChild(tablaIndicadoresCPU); // agregar tablaTanda campo de datos
-  
-  seccionResultados.appendChild(document.createElement("br")); // agregar un salto de línea
-  seccionResultados.appendChild(campoDatos); // agregar campo de datos a seccion
-  seccionResultados.appendChild(document.createElement("br")); // agregar un salto de línea
+  campoDatos.appendChild(document.createElement("br")); // agregar un salto de línea
   
   const botonDescarga = document.createElement("button"); // crear botón descarga
   botonDescarga.id = "botonDescargaResultados"; 
@@ -255,8 +258,9 @@ function mostrarResultados(tablaSo) {
   contenedorBotonDescarga.classList.add("descargar");
   contenedorBotonDescarga.appendChild(botonDescarga); // agregar botón a contenedor
 
-  document.body.appendChild(seccionResultados); // agregar sección a cuerpo
-  document.body.appendChild(contenedorBotonDescarga); // agregar botón a cuerpo
+  campoDatos.appendChild(contenedorBotonDescarga);
+  seccionResultados.appendChild(campoDatos);
+  document.body.appendChild(seccionResultados);
   Auditor.aTextFile(tablaSo.politica); // Mostrar botón de descarga de los resultados
 
 }
@@ -445,6 +449,7 @@ class TablaSo {
     LISTO: "Listo",
     EJECUTANDO: "Ejecutando",
     BLOQUEADO: "Bloqueado",
+    FINALIZANDO: "Terminando",
     FINALIZADO: "Finalizado"
   }
 
@@ -503,6 +508,7 @@ class TablaSo {
           console.log(`--> a NUEVO: "${imagenProceso.proceso.nombre}"`);// en t${this.tiempo}`);
           Auditor.log(`--> a NUEVO: "${imagenProceso.proceso.nombre}"`);// en t${this.tiempo}`);
           this.colaNuevos.push(imagenProceso);
+          AnimacionTiempoReal.registrarProceso(imagenProceso); // Registramos el proceso seguimiento
         }
       }  
     }
@@ -610,12 +616,20 @@ class Procesador {
     this.inicioTanda = tablaSo.tcp; // El tiempo de inicio que necesita es igual al tcp del SO
     this.tiempoServicio = 0;
     this.quantum = tablaSo.quantum; // El quantum inicial es igual al brindado por el usuario
+    this.estado = this.estados.SERVICIO;
+  }
+
+  estados = {
+    SERVICIO: "Servicio",
+    EJECUTANDO: "Ejecutando",
+    OCIOSO: "Ocioso"
   }
 
   ejecutar() { 
     if (this.inicioTanda > 0) { // Si recién se inicia la tanda
       this.inicioTanda -= 1; // Se consume una unidad de tiempo 
       this.tiempoServicio += 1; // Incrementamos tiempo de servicio
+      this.estado = this.estados.SERVICIO;
       console.log("--> PROCESADOR: Iniciando...");
       Auditor.log("--> PROCESADOR: Iniciando...");
       if (this.inicioTanda === 0) { // Si es momento de recibir procesos
@@ -627,6 +641,7 @@ class Procesador {
         if (this.procesoEnEjecucion.tcp > 0) { // Si está cambiando de proceso aún
           console.log(`--> PROCESADOR: Retirando "${this.procesoEnEjecucion.proceso.nombre}"`, );
           Auditor.log(`--> PROCESADOR: Retirando "${this.procesoEnEjecucion.proceso.nombre}"`, );
+          this.estado = this.estados.SERVICIO;
           this.procesoEnEjecucion.tcp -= 1; // Consumimos una unidad de tiempo
           this.tiempoServicio += 1; // Incrementamos tiempo de servicio
         } 
@@ -641,11 +656,13 @@ class Procesador {
           Auditor.log(`--> PROCESADOR: Ejecutando "${this.procesoEnEjecucion.proceso.nombre}"`);
           this.procesoEnEjecucion.unidadesRestantesRafagaCPU -= 1; // Se consume una unidad de tiempo
           this.quantum -= 1;
+          this.estado = this.estados.EJECUTANDO;
         }
       } else { // Si no hay nada para ejecutar
         console.log("--> PROCESADOR: Ocioso");
         Auditor.log("--> PROCESADOR: Ocioso");
         this.tiempoInutil += 1;
+        this.estado = this.estados.OCIOSO;
       }
     }
  
@@ -930,54 +947,19 @@ class PrioridadExterna {
   }
 
   seCambiaProceso(procesador) {
-    /**
-     * try { console.log("PrioridadProcesoListo", procesador.tablaSo.colaListos[0].proceso.prioridad); } catch (error) {
-      console.log("No se puede mostrar Proceso en Cola de Listos"); }
-    try { console.log("PrioridadProcesoEjecutando", procesador.procesoEnEjecucion.proceso.prioridad); } catch (error) {
-      console.log("No se puede mostrar Prioridad"); }
-    try { console.log("TiempoLlegadaListo", procesador.tablaSo.colaListos[0].tLlegadaListo); } catch (error) {
-      console.log("No se puede mostrar tiempo LLegada 3"); }
-    try { console.log("TiempoTablaSo", procesador.tablaSo.tiempo); } catch (error) {
-      console.log("No se puede mostrar tiempo"); }
-    */if(procesador.tablaSo.colaListos.length != 0 &&
+    if(procesador.tablaSo.colaListos.length != 0 &&
       procesador.tablaSo.colaListos[0].proceso.prioridad > procesador.procesoEnEjecucion.proceso.prioridad &&
       procesador.tablaSo.colaListos[0].tLlegadaListo === procesador.tablaSo.tiempo) {
         console.log("Cambiar proceso");
         return true;
     } else {
-      console.log("No cumple condiciones por prioridad");
+      // console.log("No cumple condiciones por prioridad");
       return procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU === 0 ||  // Si termina su rafaga, ó
         procesador.procesoEnEjecucion.tcp != procesador.tablaSo.tcp; // Si se está retirando
       }
     }
 
-  // seCambiaProceso(procesador) { 
-  //   let prioridadMasAltaListos;
-  //   //console.log("Prioridad más alta al comienzo:", prioridadMasAltaListos);
-  //   var procesosRecienListos = procesador.tablaSo.colaListos.filter( proceso => // Determinar nuevos LISTOS
-  //     proceso.tLlegadaListo ===  procesador.tablaSo.tiempo); // Si se suma en este tiempo
-  //   if (procesosRecienListos.length != 0) { // Si hay recién llegados a Listos
-  //     console.log("Procesos recién listos: ", procesosRecienListos);
-  //     prioridadMasAltaListos = procesosRecienListos.reduce((maximo, imagenProceso) =>  // Elegir la ráfaga más corta
-  //     (imagenProceso.proceso.prioridad > maximo.proceso.prioridad ? imagenProceso : maximo), procesador.procesoEnEjecucion); // tomando como referencia el primer proceso de la cola de listos
-  //     if(procesador.procesoEnEjecucion === prioridadMasAltaListos) { // Si es el mismo proceso
-  //       console.log("No cambiar proceso");
-  //       return false; // No se cambia (esto se debe a que se asigna en el mismo t que se consulta por cambio)
-  //     } else { 
-  //       //console.log("Proceso prioridad más alta Listos:", prioridadMasAltaListos);
-  //       console.log("Listos > Actual:", prioridadMasAltaListos.proceso.prioridad > procesador.procesoEnEjecucion.proceso.prioridad);
-  //       //console.log("Se termina rafaga", procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU === 0);
-  //       return prioridadMasAltaListos.proceso.prioridad > procesador.procesoEnEjecucion.proceso.prioridad 
-  //       || procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU === 0; 
-  //     }
-  //   } else {
-  //     console.log("Se termina rafaga", procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU === 0);
-  //     return procesador.procesoEnEjecucion.unidadesRestantesRafagaCPU === 0 ||  // Si termina su rafaga, ó
-  //       procesador.procesoEnEjecucion.tcp != procesador.tablaSo.tcp; // Si se está retirando
-  //     }  
-  //   }
-
-  verificarBloqueados(tablaSo) { // TODO ordenar listo de acuerdo a prioridad quizás
+  verificarBloqueados(tablaSo) { 
     if(tablaSo.colaBloqueados.length != 0) { // Si hay procesos bloqueados
       tablaSo.colaBloqueados = tablaSo.colaBloqueados // se construye una nueva cola verificando
       .filter( imagenProceso => { // para cada proceso
@@ -1021,7 +1003,7 @@ class PrioridadExterna {
     }
   }
 
-  liberarProcesador(imagenProceso, tablaSo) { // Igual que RR
+  liberarProcesador(imagenProceso, tablaSo) { 
     if(imagenProceso.unidadesRestantesRafagaCPU > 0) { // Si no ha terminado su ráfaga
       console.log(`--> EJECUTANDO a LISTO: "${imagenProceso.proceso.nombre}" al finalizar t${tablaSo.tiempo}`);
       Auditor.log(`--> EJECUTANDO a LISTO: "${imagenProceso.proceso.nombre}" al finalizar t${tablaSo.tiempo}`);
@@ -1118,6 +1100,122 @@ class Auditor {
     document.getElementById(`descargar${this.simulaciones}`).addEventListener("click", function () {
         enlaceDescarga.click();
     });
+
+  }
+
+}
+
+// Clase generadora de Gant
+class AnimacionTiempoReal {
+  static procesosActuales = [];
+
+  static registrarProceso(imagenProceso) {
+    this.procesosActuales.push(imagenProceso);
+  }
+
+  static iniciarGrafico() {
+    this.procesosActuales = [];
+    const div = document.createElement("div"); // crear sección Resultados
+    div.id = `salidas${Auditor.simulaciones}`; // Asignar id
+    div.classList.add("contenedorAnimacion");
+    const campoDatos = document.createElement("fieldset"); // crear campo de datos
+    campoDatos.id = `animaciones${Auditor.simulaciones}`; // Asignar id
+    //campoDatos.classList.add("contenedorAnimacion");
+    
+    const tablaGant = document.createElement("table"); // Crear tabla
+    tablaGant.classList.add("tablaGant");
+    const filaTiempo = document.createElement("tr"); // Crear fila tiempo
+    const datoTiempo = document.createElement("td"); // Crear dato tiempo
+    const filaCPU = document.createElement("tr"); // Crear fila tiempo
+    const datoCPU = document.createElement("td"); // Crear dato tiempo
+    datoTiempo.innerHTML = "t / Proceso"; // Agregar encabezado único
+    datoCPU.innerHTML = "CPU"; // Agregar encabezado CPU
+    filaTiempo.appendChild(datoTiempo); 
+    filaCPU.appendChild(datoCPU);
+    tablaGant.appendChild(filaTiempo); // Agregar fila de tiempo a tabla Gant
+    tablaGant.appendChild(filaCPU); // Agregar fila cpu a tabla Gant
+    tablaGant.id = `gant${Auditor.simulaciones}`; // Asignar id
+    campoDatos.appendChild(tablaGant); // Asignar Gant a Campo Datos
+
+    div.appendChild(document.createElement("br")); // agregar un salto de línea
+    div.appendChild(campoDatos); // Asignar campo de datos a Sección Resultados
+    div.appendChild(document.createElement("br")); // agregar un salto de línea
+
+    document.body.appendChild(div); // agregar sección a cuerpo
+
+    // Por cada proceso de la tanda, hacer el seguimiento
+    for (var proceso of tandaProcesos) {
+      var tr = document.createElement("tr"); // Crear una nueva fila
+      var td = document.createElement("td"); // Create a nueva celda
+    
+      td.innerHTML = proceso.nombre; // Asignar nombre del proceso a la celda
+    
+      tr.appendChild(td); // Anexar celda a fila
+      tablaGant.appendChild(tr); // Anexar fila de proceso a Tabla
+    }
+    
+    return tablaGant; // retornamos la tabla iniciada
+  }
+  
+  static generarTGrafico(tablaSo) {
+    const gant = document.getElementById(`gant${Auditor.simulaciones}`); // Obtener tabla gant
+    const filasGant = gant.getElementsByTagName("tr"); // Obtener filas
+    const celdaTiempo = document.createElement("td"); // crear celda tiempo 
+    const celdaCPU = document.createElement("td"); // crear celda cpu 
+    celdaTiempo.innerHTML = tablaSo.tiempo; // registrar estado cpu
+    celdaCPU.innerHTML = tablaSo.procesador.estado.charAt(0); // registrar estado cpu
+    filasGant[0].appendChild(celdaTiempo); // añadir tiempo a tabla
+    filasGant[1].appendChild(celdaCPU); // añadir tiempo a tabla
+    for (var i = 2; i < filasGant.length; i++) { // Iterar sobre las filas
+      const fila = filasGant[i]; // Obtener fila
+      const celda = document.createElement("td"); // crear celda
+      if (this.procesosActuales.length != 0) { // Si hay procesos que registrar
+        const imagenProceso = this.procesosActuales.find(imagenProceso =>  // averiguar proceso de fila
+        imagenProceso.proceso.nombre === fila.cells[0].innerHTML); 
+        // TODO Resolver caracter a mostrar, tcp falla  
+        let caracter = imagenProceso ? imagenProceso.estado.charAt(0) : "";
+        let estadoPrevio = i > 0 && fila.cells[tablaSo.tiempo] ? fila.cells[tablaSo.tiempo].innerHTML : "";
+        //console.log("Tiempo", tablaSo.tiempo, "Fila", i, "Estado Previo", estadoPrevio);
+        if ((caracter === "B" &&  // Si está bloqueado
+          imagenProceso.unidadesRestantesRafagaES === imagenProceso.proceso.duracionRafagasES) ||  // Y es su primera unidad de E/S
+        (caracter === "E" &&  tablaSo.procesador.estado.charAt(0) === "S")) { // O está ejecutando y hay servicio
+            celda.innerHTML = "TCP";  
+        } else { // Cualquier otro valor
+          celda.innerHTML = caracter;
+        }
+      } else { // si no hay procesos que registrar
+         celda.innerHTML = ""; // no se registra
+      };
+      fila.appendChild(this.colorearEstado(celda));
+    }  
+  }
+
+  static colorearEstado(celda) {
+    
+    switch(celda.innerHTML) {
+      case "N" :
+        celda.style.backgroundColor = "#F2E8CF";
+        break;
+      case "L" :
+        celda.style.backgroundColor = "#FFB30F";
+        break;
+      case "E" :
+        celda.style.backgroundColor = "#849324";
+        break;  
+      case "B" :
+        celda.style.backgroundColor = "#437F97";
+        break;  
+      case "T" :
+        celda.style.backgroundColor = "#01295F ";
+        break; 
+      case "F" :
+        celda.style.backgroundColor = "#FD151B";
+        break;   
+      default : 
+        celda.style.backgroundColor = "white";        
+    }
+
+    return celda;
 
   }
 

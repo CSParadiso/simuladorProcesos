@@ -11,6 +11,14 @@ body {
   background-color: #FFB703 ;
 }
 
+h2 {
+  text-align: center;
+  text-shadow: 5px 5px 5px #FB8500, 5px 5px 5px #FFB703;
+  font-weight: lighter;
+  color: #023047;
+
+}
+
 th, td {
   border: 1px solid #023047;
   border-collapse: collapse;
@@ -19,6 +27,7 @@ th, td {
 table {
   width: 100%;
   text-align: center;
+  overflow-x: auto;
 }
 
 /* CLASES */
@@ -26,6 +35,20 @@ table {
 .descargar {
   display: flex;
   justify-content: center;
+}
+
+.contenedorAnimacion {
+  width: 80%;
+  overflow-x: auto;
+  margin: auto; 
+}
+
+.contenedorAnimacion table tr td {
+  overflow-x: auto; 
+  width: 100%;
+  /* border-collapse: collapse; */
+  background-color: #FB8500 ;
+
 }
 
 /* PSEUDOCLASES */
