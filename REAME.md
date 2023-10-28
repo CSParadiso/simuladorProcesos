@@ -15,6 +15,10 @@ Las políticas simuladas pueden ser:
 - Shortest Job Next
 - Shortest Remaining Time
 
+Se puede descargar una copia de cada una de las simulaciones en formato HTML.
+
+**Para utilizar el simulador simplemente es necesario ejecutar en un navegador el archivo _simulador.html_ del directorio _html_.**
+
 -------------------------------------------------------------
 
 ## Cargar tanda de procesos propia
