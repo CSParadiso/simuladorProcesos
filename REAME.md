@@ -1,6 +1,6 @@
 # Simulador de Planificación de Procesos
 
-Este proyecto se realizó en el contexto de la materia Sistemas Operativos del tercer año de la carrera Licenciatura en Sistemas de la Universidad Nacional de Tierra del Fuego.
+Este proyecto se realizó en el contexto de la materia Sistemas Operativos del segundo cuatrimestre del tercer año de la carrera Licenciatura en Sistemas de la Universidad Nacional de Tierra del Fuego. El año es 2023.
 
 Simula las políticas de planificación de procesos del sistema operativo al suministrarle una tanda de procesos a través de un archivo *.txt* que el usuario puede suministrar. Además, se puede parametrizar algunos valores propios del sistema operativo como: 
 - TIP Tiempo que utiliza el SO para aceptar nuevos procesos
