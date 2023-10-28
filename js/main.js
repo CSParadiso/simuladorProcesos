@@ -1,26 +1,9 @@
+/*
+Autor: Paradiso, Cayetano Simón
+Fecha: 2023-10-28
+*/
+
 let tandaProcesos = []; // Variable Global
-
-// let nombreEstadoYTiempo = function (imagenProceso) {
-//   console.log(imagenProceso.proceso.nombre, imagenProceso.estado);
-// }
-
-// let imagen = function (imagenProceso) {
-//   console.log(imagenProceso.proceso);
-//   console.log("TIP:", imagenProceso.tip);
-//   console.log("TCP:", imagenProceso.tcp);
-//   console.log("TFP:", imagenProceso.tfp);
-//   console.log("ESTADO:", imagenProceso.estado);
-//   console.log("Ráfagas Restantes:", imagenProceso.rafagasRestantes);
-//   console.log("Unidades Restantes Ráfaga CPU:", imagenProceso.unidadesRestantesRafagaCPU);
-//   console.log("Tiempo Bloqueado:", imagenProceso.tBloqueado);
-//   console.log("Tiempo de inicio:", imagenProceso.tInicio);
-//   console.log("Tiempo Listo:", imagenProceso.tListo);
-//   console.log("Tiempo de finalización:", imagenProceso.tFin);
-// } 
-
-// let nombre = function(imagenProceso) {
-//   console.log(imagenProceso.proceso.nombre);
-// } 
 
 // Acceder al archivo subido por el usuario
 document.getElementById("processFile").addEventListener("click", function (e) {
@@ -44,13 +27,18 @@ document.getElementById("processFile").addEventListener("click", function (e) {
 // Disparar Procesamiento de Tanda
 document.getElementById("startSimulation").addEventListener("click", function (e) {
   e.preventDefault(); // Evitar que la página se actualice luego del submit
-  const valoresObtenidos = obtenerDatosSO(); // Obtener parámetros SO ingresados por el usuario
-  const datosSo = new TablaSo(valoresObtenidos.politica, valoresObtenidos.valorTip, 
+  if (window.getComputedStyle(document.getElementById("datosTandaIngresada")).display != "none") { // Si el archivo ha sido procesado
+    const valoresObtenidos = obtenerDatosSO(); // Obtener parámetros SO ingresados por el usuario
+    const datosSo = new TablaSo(valoresObtenidos.politica, valoresObtenidos.valorTip, 
                          valoresObtenidos.valorTfp, valoresObtenidos.valorTcp,
                          valoresObtenidos.valorQuantum); // Crear Tabla de SO de acuerdo a los valores
-  simularProcesamiento(datosSo);
-  mostrarResultados(datosSo);
-  Auditor.simulaciones += 1; // Incrementar cantidad de simulaciones
+    simularProcesamiento(datosSo);
+    mostrarResultados(datosSo);
+    document.getElementById(`gant${Auditor.simulaciones}`).scrollIntoView({ behavior: 'smooth' });
+    Auditor.simulaciones += 1; // Incrementar cantidad de simulaciones
+  } else {
+    alert("Antes de Simular debe Procesar un archivo.");
+  }
 })
 
 // Procesar archivo
@@ -88,7 +76,7 @@ function crearTabla(nombreArchivo) {
   // Crear tabla, caption, separador y fila de encabezados
   const tablaProcesos = document.createElement("table");
   const captionTabla = document.createElement("caption");
-  captionTabla.innerHTML = `Datos obtenidos del Archivo ${nombreArchivo}`;
+  captionTabla.innerHTML = `Datos obtenidos del archivo ${nombreArchivo}`;
   const separador = document.createElement("hr");
   const filaTabla = document.createElement("tr");
   // Crear encabezados 
@@ -232,7 +220,7 @@ function simularProcesamiento(tablaSo) {
 // Mostrar Resultados en pantalla y habilitar descarga de eventos
 function mostrarResultados(tablaSo) {
   const seccionResultados = document.createElement("section"); // crear sección Resultados
-  seccionResultados.id = "salidas"; // Asignar id
+  seccionResultados.id = `resultados${Auditor.simulaciones}`; // Asignar id
   const campoDatos = document.createElement("fieldset"); // crear campo de datos
 
   // const tablaSeguimiento = AnimacionTiempoReal.iniciarGrafico();
@@ -261,7 +249,7 @@ function mostrarResultados(tablaSo) {
   campoDatos.appendChild(contenedorBotonDescarga);
   seccionResultados.appendChild(campoDatos);
   document.body.appendChild(seccionResultados);
-  Auditor.aTextFile(tablaSo.politica); // Mostrar botón de descarga de los resultados
+  Auditor.toHtml(tablaSo.politica); // Mostrar botón de descarga de los resultados
 
 }
 
@@ -557,54 +545,6 @@ class TablaSo {
     return this.politica.seCambiaProceso(imagenProceso);
   }
 
-  // mostrarInformacion(funcion) {
-  //   console.log("NUEVOS: ");
-  //   this.colaNuevos.forEach(imagenProceso => {
-  //     funcion(imagenProceso);
-  //   });
-  //   console.log("LISTOS");
-  //   this.colaListos.forEach(imagenProceso => {
-  //     funcion(imagenProceso);
-  //   });
-  //   console.log("EJECUTANDO")
-  //   if(this.procesador.procesoEnEjecucion != null) { funcion(this.procesador.procesoEnEjecucion); }
-  //   console.log("BLOQUEADOS");
-  //   this.colaBloqueados.forEach(imagenProceso => {
-  //     funcion(imagenProceso);
-  //   });
-  //   console.log("FINALIZANDO (ejecutando TFP)");
-  //   this.colaFinalizando.forEach(imagenProceso => {
-  //     funcion(imagenProceso);
-  //   });
-  //   console.log("FINALIZADOS");
-  //   this.colaFinalizados.forEach(imagenProceso => {
-  //     funcion(imagenProceso);
-  //   });
-
-  //   let nombreYestado = function (imagenProceso) {
-  //     console.log(imagenProceso.proceso.nombre, imagenProceso.estado);
-  //   }
-    
-  //   let imagen = function (imagenProceso) {
-  //     console.log(imagenProceso.proceso);
-  //     console.log("TIP:", imagenProceso.tip);
-  //     console.log("TCP:", imagenProceso.tcp);
-  //     console.log("TFP:", imagenProceso.tfp);
-  //     console.log("ESTADO:", imagenProceso.estado);
-  //     console.log("Ráfagas Restantes:", imagenProceso.rafagasRestantes);
-  //     console.log("Unidades Restantes Ráfaga CPU:", imagenProceso.unidadesRestantesRafagaCPU);
-  //     console.log("Tiempo Bloqueado:", imagenProceso.tBloqueado);
-  //     console.log("Tiempo de inicio:", imagenProceso.tInicio);
-  //     console.log("Tiempo Listo:", imagenProceso.tListo);
-  //     console.log("Tiempo de finalización:", imagenProceso.tFin);
-  //   } 
-    
-  //   let nombre = function(imagenProceso) {
-  //     console.log(imagenProceso.proceso.nombre);
-  //   }  
-    
-
-  // }
 
 }
 
@@ -1083,23 +1023,172 @@ class Auditor {
   static mensajesLoggeados = []; // Arreglo de mensajes 
 
   static log(mensaje) {
-    this.mensajesLoggeados.push(mensaje); // Agregar mensaje
+    if (!this.mensajesLoggeados[this.simulaciones]) { // Si aún no existe esta simulación
+      this.mensajesLoggeados[this.simulaciones] = []; // Inicializar el arreglo de mensajes de la simualción actual
+    }
+    this.mensajesLoggeados[this.simulaciones].push(mensaje); // Agregar mensaje
   }
 
-  static aTextFile(politica) {
-    const contenidoTexto = this.mensajesLoggeados.join('\n'); // Separar con nueva línea los mensajes del arreglo
-    const blob = new Blob([contenidoTexto], { type: "text/plain" }); // crear archivo de texto con contenido
+  static toHtml(politica) {
+    // Recuperar logs de la simulacióna ctual
+    const logsSimulacionActual = this.mensajesLoggeados[this.simulaciones];
+    const tabla = document.getElementById(`salidas${Auditor.simulaciones}`).outerHTML;
+    const seccionResultados = document.getElementById(`resultados${Auditor.simulaciones}`).cloneNode(true);
+    const fieldset = seccionResultados.querySelector('fieldset');
+    var divBoton = fieldset.lastElementChild;
+    fieldset.removeChild(divBoton);    
 
-    const enlaceDescarga = document.createElement("a"); // crear enlace html
-    enlaceDescarga.href = URL.createObjectURL(blob); // vincular enlace a url
-    enlaceDescarga.download = `${politica.constructor.name}_${new Date().getUTCDate()
-      + 1}${new Date().getMonth() 
-      + 1}${new Date().getFullYear()}_${new Date().getHours()}${new Date().getMinutes()}${new Date().getSeconds()}.txt`; // Nombre del archivo a descargar
+    if(logsSimulacionActual) {
 
-    // Disparar un evento de click cuando se clickea el botón de descarga 
-    document.getElementById(`descargar${this.simulaciones}`).addEventListener("click", function () {
-        enlaceDescarga.click();
-    });
+      // Generar archivo Html con el contenido
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Log de eventos de ${politica.constructor.name}</title>
+          <style>
+          /* GLOBAL STYLES */
+            body {
+              background-color: #FFB703;
+              background-size: cover;
+              font-family: 'Times New Roman', Times, serif, sans-serif;
+              color: #023047;
+              margin: 0;
+              padding: 0;
+            }
+
+            h2 {
+              background-image: url("/fondo.png") no-repeat fixed;
+              text-align: center;
+              text-shadow: 2px 2px 2px #FB8500;
+              font-weight: lighter;
+              color: #023047;
+              margin: 20px 0;
+            }
+
+            table {
+              width: 100%;
+              text-align: center;
+              overflow-x: auto;
+              border-collapse: collapse;
+              margin: auto;
+            }
+
+            th, td {
+              border: 1px solid #023047;
+              padding: 8px;
+            }
+
+            .button {
+              background-color: #023047;
+              color: #FFB703;
+              padding: 10px 20px;
+              border: none;
+              cursor: pointer;
+              transition: background-color 0.3s ease;
+            }
+
+            .button:hover {
+              background-color: #219EBC;
+            }
+
+            .descargar, #descargar {
+              display: flex;
+              justify-content: center;
+            }
+
+            .contenedorAnimacion {
+              width: 90%;
+              overflow-x: auto;
+              margin: auto;
+            }
+
+            .contenedorAnimacion table tr td {
+              overflow-x: auto;
+              width: 100%;
+              background-color: #FB8500;
+            }
+
+            .tablaGant {
+              border-collapse: collapse;
+            }
+
+            /* Añadir color para estados específicos */
+            /* Estados */
+            .contenedorAnimacion table td.nuevo {
+              color: #023047;
+              background-color: #8ECAE6; 
+            }
+
+            .contenedorAnimacion table td.listo {
+              color: #023047;
+              background-color: #FFB703; 
+            }
+
+            .contenedorAnimacion table td.ejecutando {
+              color: #023047;
+              background-color: #4CAF50; 
+            }
+
+            .contenedorAnimacion table td.bloqueado {
+              color: #023047;
+              background-color: #FF3333; 
+            }
+
+            .contenedorAnimacion table td.terminando {
+              color: #FFB703;
+              background-color: #9C27B0; /* Purple for "Terminando" */
+            }
+
+            .contenedorAnimacion table td.finalizado {
+              color: #023047;
+              background-color: #E0E0E0; /* Light Gray for "Finalizado" */
+            }
+
+            /* Procesador */
+            .contenedorAnimacion table td.servicio {
+              background-color: #2196F3; /* Blue for "Procesador Servicio" */
+            }
+
+            .contenedorAnimacion table td.ocioso {
+              color: #023047;
+              background-color: #757575; /* Gray for "Procesador Ocioso" */
+            }
+
+            .contenedorAnimacion table td.defecto {
+              color: #023047;
+              background-color: #CCCCCC; /* Light Gray for "Defecto" */
+            }
+
+            /* RESPONSIVE DESIGN */
+            @media (max-width: 768px) {
+              /* Add responsive styling here */
+            }
+          </style>
+        </head>
+        <body>
+          <h1>${politica.constructor.name}</h1>
+          ${tabla}
+          ${seccionResultados.outerHTML}
+          <pre>${logsSimulacionActual.join('<br>')}</pre>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob([htmlContent], { type: "text/html" }); // Crear archivo
+
+      const enlaceDescarga = document.createElement("a"); // crear enlace html
+      enlaceDescarga.href = URL.createObjectURL(blob); // vincular enlace a url
+      enlaceDescarga.download = `${politica.constructor.name}_${new Date().getUTCDate()
+        + 1}${new Date().getMonth() 
+        + 1}${new Date().getFullYear()}_${new Date().getHours()}${new Date().getMinutes()}${new Date().getSeconds()}.html`; // Nombre del archivo a descargar
+
+      // Disparar un evento de click cuando se clickea el botón de descarga 
+      document.getElementById(`descargar${this.simulaciones}`).addEventListener("click", function () {
+          enlaceDescarga.click();
+      });
+
+    }
 
   }
 
@@ -1165,7 +1254,7 @@ class AnimacionTiempoReal {
     celdaTiempo.innerHTML = tablaSo.tiempo; // registrar estado cpu
     celdaCPU.innerHTML = tablaSo.procesador.estado.charAt(0); // registrar estado cpu
     filasGant[0].appendChild(celdaTiempo); // añadir tiempo a tabla
-    filasGant[1].appendChild(celdaCPU); // añadir tiempo a tabla
+    filasGant[1].appendChild(this.aplicarClase(celdaCPU)); // añadir tiempo a tabla
     for (var i = 2; i < filasGant.length; i++) { // Iterar sobre las filas
       const fila = filasGant[i]; // Obtener fila
       const celda = document.createElement("td"); // crear celda
@@ -1176,44 +1265,71 @@ class AnimacionTiempoReal {
         let caracter = imagenProceso ? imagenProceso.estado.charAt(0) : "";
         let estadoPrevio = i > 0 && fila.cells[tablaSo.tiempo] ? fila.cells[tablaSo.tiempo].innerHTML : "";
         //console.log("Tiempo", tablaSo.tiempo, "Fila", i, "Estado Previo", estadoPrevio);
-        if ((caracter === "B" &&  // Si está bloqueado
-          imagenProceso.unidadesRestantesRafagaES === imagenProceso.proceso.duracionRafagasES) ||  // Y es su primera unidad de E/S
-        (caracter === "E" &&  tablaSo.procesador.estado.charAt(0) === "S")) { // O está ejecutando y hay servicio
-            celda.innerHTML = "TCP";  
+        if (tablaSo.tiempo != 0 && // Si no es el tiempo 0
+            filasGant[1].cells[tablaSo.tiempo + 1].innerHTML === "S" && // Si hay servicio
+              ((imagenProceso === tablaSo.procesador.procesoEnEjecucion) || // Si se está ejecutando ahora 
+              (estadoPrevio === "E" || estadoPrevio === "TCP")) // O se ejecutó en el tiempo anterior
+        //   (caracter === "B" && // Si está bloqueado y es su primera unidad de E/S
+        //     imagenProceso.unidadesRestantesRafagaES === imagenProceso.proceso.duracionRafagasES) ||
+        //   (imagenProceso === tablaSo.procesador.procesoEnEjecucion &&
+          //   (tablaSo.tiempo != 0 && filasGant[1].cells[tablaSo.tiempo - 1].innerHTML === "S"  || 
+          //   filasGant[1].cells[tablaSo.tiempo].innerHTML === "S") && // O está ejecutando y hay servicio
+          // ((tablaSo.tiempo != 0 && (fila.cells[tablaSo.tiempo].innerHTML === "E")) ||
+          // (tablaSo.tiempo != 0 && imagenProceso === tablaSo.procesador.procesoEnEjecucion))
+          ) // && filasGant[0].cells[tablaSo.tiempo].innerHTML === "S") // Si antes estuvo ejecutando
+        {
+          celda.innerHTML = "TCP";
+          console.log("Tiempo", tablaSo.tiempo);
+          console.log("estado Previo", estadoPrevio);
+          console.log("fila.cells[tablaSo.tiempo].innerHTML", fila.cells[tablaSo.tiempo].innerHTML, fila.cells[tablaSo.tiempo]);
+          console.log("filasGant[1].cells[tablaSo.tiempo + 1].innerHTML", filasGant[1].cells[tablaSo.tiempo + 1].innerHTML, filasGant[1].cells[tablaSo.tiempo + 1]);
+          console.log("filasGant[1].cells[tablaSo.tiempo].innerHTML", filasGant[1].cells[tablaSo.tiempo].innerHTML, filasGant[1].cells[tablaSo.tiempo]);
         } else { // Cualquier otro valor
           celda.innerHTML = caracter;
+          console.log("Tiempo", tablaSo.tiempo);
+          console.log("estado Previo", estadoPrevio);
+          console.log("fila.cells[tablaSo.tiempo].innerHTML", fila.cells[tablaSo.tiempo].innerHTML, fila.cells[tablaSo.tiempo]);
+          console.log("filasGant[1].cells[tablaSo.tiempo + 1].innerHTML", filasGant[1].cells[tablaSo.tiempo + 1].innerHTML, filasGant[1].cells[tablaSo.tiempo + 1]);
+          console.log("filasGant[1].cells[tablaSo.tiempo].innerHTML", filasGant[1].cells[tablaSo.tiempo].innerHTML, filasGant[1].cells[tablaSo.tiempo]);
         }
       } else { // si no hay procesos que registrar
          celda.innerHTML = ""; // no se registra
       };
-      fila.appendChild(this.colorearEstado(celda));
+      fila.appendChild(this.aplicarClase(celda));
     }  
   }
 
-  static colorearEstado(celda) {
+  static aplicarClase(celda) {
     
-    switch(celda.innerHTML) {
-      case "N" :
-        celda.style.backgroundColor = "#F2E8CF";
+    switch (celda.innerHTML) {
+      case "N":
+        celda.classList.add("nuevo");
         break;
-      case "L" :
-        celda.style.backgroundColor = "#FFB30F";
+      case "L":
+        celda.classList.add("listo");
         break;
-      case "E" :
-        celda.style.backgroundColor = "#849324";
-        break;  
-      case "B" :
-        celda.style.backgroundColor = "#437F97";
-        break;  
-      case "T" :
-        celda.style.backgroundColor = "#01295F ";
-        break; 
-      case "F" :
-        celda.style.backgroundColor = "#FD151B";
-        break;   
-      default : 
-        celda.style.backgroundColor = "white";        
-    }
+      case "E":
+        celda.classList.add("ejecutando");
+        break;
+      case "B":
+        celda.classList.add("bloqueado");
+        break;
+      case "T":
+        celda.classList.add("terminando");
+        break;
+      case "F":
+        celda.classList.add("finalizado");
+        break;
+      case "O":
+        celda.classList.add("ocioso");
+        break;
+      case "S":
+        celda.classList.add("servicio");
+        break;
+      default:
+        celda.classList.add("defecto");
+  }
+
 
     return celda;
 

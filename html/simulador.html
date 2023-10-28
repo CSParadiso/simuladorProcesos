@@ -16,50 +16,55 @@
     
   <body>
 
-      <h2>Simulador de Planificación de Procesos</h2>
+    <div class="header">  
+      <h2 class="header">Simulador de Planificación de Procesos</h2>
+      <a href="https://github.com/CSParadiso/simuladorProcesos.git" target="_blank" class="header">
+        <img src="../images/github-mark.svg" alt="Enlace a Repositorio" style="width:42px;height:42px;">
+      </a> 
+    </div>  
 
       <section id="ingresos">
       <!-- Formulario de los distintos inputs requeridos para simular -->
       <form id="manejadorArchivos">
-        <fieldset id="selectFile">
-          <!-- Seleccionar archivo .txt -->
-          <legend>Seleccionar archivo</legend>
-          <input type="file" id="inputFile" accept=".txt" required />
-          <button type="submit" id="processFile">Procesar Archivo</button>
-          <div id="datosTandaIngresada" style="display: none;"></div>
-        </fieldset>
-        <fieldset id="selectPolitics">
-          <!-- Seleccionara política -->
-          <legend>Seleccionar política</legend>
-          <select id="politics">
-            <option value="FCFS (First Come First Served)">FCFS (First Come First Served)</option>
-            <option value="Prioridad Externa">Prioridad Externa</option>
-            <option value="Round-Robin">Round-Robin</option>
-            <option value="SJN (Shortest Job Next)">SPN (Shortest Job Next)</option>
-            <option value="SRT (Shortest Remaining Time)">SRT (Shortest Remaining Time)</option>
-          </select>
-        </fieldset>
-        <fieldset id="setTimes">
-          <!-- Seleccionar tiempos del SO -->
-          <legend>Seleccionar los tiempos del SO (en milisegundos)</legend>
-          <input type="number" min="1" placeholder="1" name="tip" id="tip"/>
-          <label for="tip">TIP</label>
-          <span>Tiempo que utiliza el SO para aceptar nuevos procesos</span><br>
-          <input type="number" min="1" placeholder="1" name="tfp" id="tfp"/>
-          <label for="tfp">TFP</label>
-          <span>Tiempo que utiliza el SO para terminar procesos</span><br>
-          <input type="number" min="1" placeholder="1" name="tcp" id="tcp"/>
-          <label for="tcp">TCP</label>
-          <span>Tiempo de conmutación entre procesos</span><br>
-          <input type="number" min="1" placeholder="1" name="quantum" id="quantum"/>
-          <label for="quantum">Quantum</label>
-          <span>(si fuera necesario)</span><br>
-        </fieldset>
-        <!-- Simular planificación de procesos (manejado por JavaScript) -->
-        <fieldset id="simulateOrReset">
-          <button type="submit" id="startSimulation">Simular</button>
-          <!-- <button type="reset" id="resetForm">Resetear</button> -->
-        </fieldset>
+          <fieldset id="selectFile">
+            <!-- Seleccionar archivo .txt -->
+            <legend>Seleccionar archivo</legend>
+            <input type="file" id="inputFile" accept=".txt" required />
+            <button type="submit" id="processFile">Procesar Archivo</button>
+            <div id="datosTandaIngresada" style="display: none;"></div>
+          </fieldset>
+          <fieldset id="selectPolitics">
+            <!-- Seleccionara política -->
+            <legend>Seleccionar política</legend>
+            <select id="politics">
+              <option value="FCFS (First Come First Served)">FCFS (First Come First Served)</option>
+              <option value="Prioridad Externa">Prioridad Externa</option>
+              <option value="Round-Robin">Round-Robin</option>
+              <option value="SJN (Shortest Job Next)">SJN (Shortest Job Next)</option>
+              <option value="SRT (Shortest Remaining Time)">SRT (Shortest Remaining Time)</option>
+            </select>
+          </fieldset>
+          <fieldset id="setTimes">
+            <!-- Seleccionar tiempos del SO -->
+            <legend>Seleccionar los tiempos del SO (en milisegundos)</legend>
+            <input type="number" min="1" placeholder="1" name="tip" id="tip"/>
+            <label for="tip">TIP</label>
+            <span>Tiempo que utiliza el SO para aceptar nuevos procesos</span><br>
+            <input type="number" min="1" placeholder="1" name="tfp" id="tfp"/>
+            <label for="tfp">TFP</label>
+            <span>Tiempo que utiliza el SO para terminar procesos</span><br>
+            <input type="number" min="1" placeholder="1" name="tcp" id="tcp"/>
+            <label for="tcp">TCP</label>
+            <span>Tiempo de conmutación entre procesos</span><br>
+            <input type="number" min="1" placeholder="1" name="quantum" id="quantum"/>
+            <label for="quantum">Quantum</label>
+            <span>(si fuera necesario)</span><br>
+          </fieldset>
+          <!-- Simular planificación de procesos (manejado por JavaScript) -->
+          <fieldset id="simulateOrReset">
+            <button type="submit" id="startSimulation">Simular</button>
+            <!-- <button type="reset" id="resetForm">Resetear</button> -->
+          </fieldset>
       </form>
     </section>
 

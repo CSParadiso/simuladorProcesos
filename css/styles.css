@@ -1,78 +1,138 @@
-/* PALETA DE COLORES */
-/* #8ECAE6
-#219EBC
-#023047
-#FFB703
-#FB8500 */
-
-/* ELEMENTOS */
+/*
+Autor: Paradiso, Cayetano Simón
+Fecha: 2023-10-28
+*/
 
 body {
-  background-color: #FFB703 ;
+  background-color: #FFB703;
+  background-size: cover;
+  font-family: 'Times New Roman', Times, serif, sans-serif;
+  color: #023047;
+  margin: 0;
+  padding: 0;
 }
 
 h2 {
+  background-image: url("/fondo.png") no-repeat fixed;
   text-align: center;
-  text-shadow: 5px 5px 5px #FB8500, 5px 5px 5px #FFB703;
+  text-shadow: 2px 2px 2px #FB8500;
   font-weight: lighter;
   color: #023047;
-
-}
-
-th, td {
-  border: 1px solid #023047;
-  border-collapse: collapse;
+  margin: 20px 0;
 }
 
 table {
   width: 100%;
   text-align: center;
   overflow-x: auto;
+  border-collapse: collapse;
+  margin: auto;
 }
 
-/* CLASES */
+th, td {
+  border: 1px solid #023047;
+  padding: 8px;
+}
 
-.descargar {
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+}
+
+.header h2 {
+  margin: 0 auto; /* This centers the <h2> horizontally */
+}
+
+.button {
+  background-color: #023047;
+  color: #FFB703;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #219EBC;
+}
+
+.descargar, #descargar {
   display: flex;
   justify-content: center;
 }
 
 .contenedorAnimacion {
-  width: 80%;
+  width: 90%;
   overflow-x: auto;
-  margin: auto; 
-}
-
-.contenedorAnimacion table tr td {
-  overflow-x: auto; 
-  width: 100%;
-  /* border-collapse: collapse; */
-  background-color: #FB8500 ;
-
-}
-
-/* PSEUDOCLASES */
-
-/* IDs */
-
-#ingresos, #salidas {
-  color: #023047;
-  width: 80%;
   margin: auto;
 }
 
-#simulateOrReset {
-  display: flex;
-  justify-content: center;
+.contenedorAnimacion table tr td {
+  overflow-x: auto;
+  width: 100%;
+  background-color: #FB8500;
 }
 
-#startSimulation, #resetForm, #botonDescargaResultados {
-  background-color: #023047;
+.tablaGant {
+  border-collapse: collapse;
+}
+
+/* Añadir color para estados específicos */
+/* Estados */
+.contenedorAnimacion table td.nuevo {
+  color: #023047;
+  background-color: #8ECAE6; 
+}
+
+.contenedorAnimacion table td.listo {
+  color: #023047;
+  background-color: #FFB703; 
+}
+
+.contenedorAnimacion table td.ejecutando {
+  color: #023047;
+  background-color: #4CAF50; 
+}
+
+.contenedorAnimacion table td.bloqueado {
+  color: #023047;
+  background-color: #FF3333; 
+}
+
+.contenedorAnimacion table td.terminando {
   color: #FFB703;
-  width: fit-content;
+  background-color: #9C27B0; /* Purple for "Terminando" */
 }
 
-#descargar {
-  display: flex;
-  justify-content: center;
+.contenedorAnimacion table td.finalizado {
+  color: #023047;
+  background-color: #E0E0E0; /* Light Gray for "Finalizado" */
 }
+
+/* Procesador */
+.contenedorAnimacion table td.servicio {
+  background-color: #2196F3; /* Blue for "Procesador Servicio" */
+}
+
+.contenedorAnimacion table td.ocioso {
+  color: #023047;
+  background-color: #757575; /* Gray for "Procesador Ocioso" */
+}
+
+.contenedorAnimacion table td.defecto {
+  color: #023047;
+  background-color: #CCCCCC; /* Light Gray for "Defecto" */
+}
+
+.contacto {
+  text-align: center;
+  margin: 1vw;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+  /* Add responsive styling here */
+}
+
