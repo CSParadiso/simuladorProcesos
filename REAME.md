@@ -27,4 +27,5 @@ Ejemplo:
 Nombre del proceso, tiempo de arribo, cantidad de ráfagas de CPU a emplear para terminar, duración de la ráfaga de CPU, duración de la ráfaga de entrada-salida entre ráfagas de CPU, prioridad externa
 Varios ejemplos se pueden encontrar en el directorio _tandas_ de este repositorio.
 
-
+![[images/Readme1.png]]
+![[images/Readme2.png]]
